@@ -138,23 +138,40 @@ def calculate_similarity(papers):
     return similarity_matrix
 
 
-
-def build_interactive_network(papers, similarity_matrix, threshold=thresh_value):
-    """Build an interactive network graph based on abstract similarity."""
-    net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
+def build_interactive_network(papers, similarity_matrix, threshold=0.3):
+    """Build an interactive network graph based on abstract similarity, labeling nodes with unique categories."""
+    net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")
     net.force_atlas_2based()
 
-    for i, (title, _, important_word, cat) in enumerate(papers):
-        net.add_node(i, label=cat[0], title=title)
+    category_count = {}
+    nodes_labels = []
 
-    # Add edges based on similarity score
+    # Prepare unique category labels for each paper
+    for _, _, categories in papers:
+        if not categories:  # Handle cases where no category data is available
+            category = "Uncategorized"
+        else:
+            category = categories[0]  # Assuming we use the first category listed if there are multiple
+        if category in category_count:
+            category_count[category] += 1
+            label = f"{category} {category_count[category]}"
+        else:
+            category_count[category] = 1
+            label = category
+
+        nodes_labels.append(label)
+
+    # Add nodes with unique labels
+    for i, (title, _, _, _) in enumerate(papers):
+        net.add_node(i, label=nodes_labels[i], title=title)
+
+    # Add edges based on similarity score, converting float32 to float
     for i in range(len(papers)):
         for j in range(i + 1, len(papers)):
             if similarity_matrix[i][j] > threshold:
                 net.add_edge(i, j, value=float(similarity_matrix[i][j]))
 
-    path = "arxiv_network.html"
-    net.save_graph(path)
+    path = "tmp/arxiv_network.html"
     net.show(path)
     return path
 
