@@ -9,7 +9,7 @@ from transformers import pipeline
 import re
 from collections import Counter
 
-@st.cache_resource(allow_output_mutation=True)
+@st.cache_resource
 def load_pipeline_summarizer():
     # Initialize the BART summarization pipeline
     # summarizer = pipeline("summarization", "Falconsai/text_summarization")
@@ -18,11 +18,12 @@ def load_pipeline_summarizer():
 
 summarizer = load_pipeline_summarizer()
 
-@st.cache_resource(allow_output_mutation=True)
+@st.cache_resource
 def load_sentence_transformer():
     sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2')
     return sentence_transformer
 
+model = load_sentence_transformer()
 
 def fetch_papers(subtopic):
     """Fetch papers from the arXiv API based on a subtopic."""
