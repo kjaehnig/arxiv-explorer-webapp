@@ -171,7 +171,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             if similarity_matrix[i][j] > threshold:
                 net.add_edge(i, j, value=float(similarity_matrix[i][j]))
 
-    path = "tmp/arxiv_network.html"
+    path = "arxiv_network.html"
     net.save_graph(path)
     net.show(path)
     return path
