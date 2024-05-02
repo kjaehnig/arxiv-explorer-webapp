@@ -8,7 +8,7 @@ from pyvis.network import Network
 from transformers import pipeline
 import re
 from collections import Counter
-import nltk.corpus import stopwords
+from nltk.corpus import stopwords
 
 
 stopwords = set(stopwords.words("english"))
