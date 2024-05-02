@@ -43,12 +43,15 @@ model = load_sentence_transformer()
 with st.sidebar:
     st.header("Control Panel")
     # Sampling number input
-    max_results = st.slider('N (Max Results)', min_value=5, max_value=50, value=5)
+    max_results = st.slider('N (Max Results)', min_value=5, max_value=30, value=5)
     if max_results > 10:
         st.warning("Setting N above 10 may slow down the app.")
 
     thresh_value = st.slider('Threshold', min_value=0.01, max_value=0.9, value=0.25)
 
+    print_out_paper_summaries = st.sidebar.checkbox('Get summaries with Sentence-Transformer?', value=True)
+    if print_out_paper_summaries:
+        st.warning("This is currently slow. May crash with N > 20.")
 
 def fetch_papers(subtopic, max_results=5):
     """Fetch papers from the arXiv API based on a subtopic and retrieve their fields."""
@@ -201,10 +204,11 @@ if st.button('Fetch Papers'):
         network_path = build_interactive_network(papers, similarity_matrix)
         st.components.v1.html(open(network_path, 'r').read(), height=800)
 
-        # Display paper titles and summaries
-        for title, summary, _, cat in papers:
-            with st.expander(title + f"(found in {cat}"):
-                summary_response = summarize_abstract(summary)
-                st.write(summary_response)
+        if print_out_paper_summaries:
+            # Display paper titles and summaries
+            for title, summary, _, cat in papers:
+                with st.expander(title + f"(found in {cat}"):
+                    summary_response = summarize_abstract(summary)
+                    st.write(summary_response)
     else:
         st.write("No papers found.")
