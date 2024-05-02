@@ -543,7 +543,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
                            spring_strength=0.05)
 
     # dict for used group colors
-    group_colors = {}
+    # group_colors = {}
 
     # Set to keep track of already used primary categories
     used_categories = set()
@@ -567,14 +567,21 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         #     net.add_node(i, label=unique_labels[i], title=title, group=paper_group[i])
 
         # Assign unique colors and create unique labels based on group and category info
-        for i, (title, _, primary_category, categories) in enumerate(papers):
-            group = paper_group[i]
-            group_label = f"{primary_category.split('-')[0]} - {arxiv_categories.get(primary_category, 'Other')}"
+        group_details = {}
 
-            if group not in group_colors:
-                group_colors[group] = color_palette[len(group_colors) % len(color_palette)]
+        # Initialize group details
+        for index, (title, _, primary_category, categories) in enumerate(papers):
+            group = paper_group[index]
+            # primary_category = categories[0] if categories else "Unknown"
+            if group not in group_details:
+                group_details[group] = {
+                    'category': primary_category,
+                    'papers': [],
+                    'color': color_palette[len(group_details) % len(color_palette)]
+                }
+            group_details[group]['papers'].append(title)
 
-            net.add_node(i, label=group_label, title=title, color=group_colors[group])
+            net.add_node(index, label=title, title=title, color=group_details[group]['color'])
 
         # Add edges based on similarity score
         for i in range(len(papers)):
@@ -603,7 +610,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     path = "arxiv_network.html"
     net.save_graph(path)
     net.show(path)
-    return path, group_colors
+    return path, group_details
 
 st.title('arXiv Paper Explorer')
 
@@ -622,14 +629,22 @@ if st.button('Fetch Papers'):
         st.components.v1.html(HtmlFile.read(), height=700)
 
         if show_legend:
-            # Create a container to display the legend
-            legend_container = st.container()
-            with legend_container:
-                st.write("### Legend")
-                for group, color in group_colors.items():
-                    # Use markdown with a colored box to represent the group color
-                    st.markdown(f"<span style='color:{color};'>&#9632;</span> {group}",
-                                unsafe_allow_html=True)
+            st.write("### Graph Legend")
+            cols_per_row = 5  # Define number of columns in the legend grid
+            rows = [st.container() for _ in range((len(group_details) + cols_per_row - 1) // cols_per_row)]
+
+            for idx, (group, details) in enumerate(group_details.items()):
+                with rows[idx // cols_per_row]:
+                    col = st.columns(cols_per_row)[idx % cols_per_row]
+                    with col:
+                        # Create a colored button for each group
+                        button_html = f"<style>.btn-primary {{background-color: {details['color']}; border-color: {details['color']};}}</style>"
+                        button_html += f"<button class='btn btn-primary'>{details['category']}</button>"
+                        if st.button(f"", key=f"group_{idx}", help=details['category'], args=()):
+                            st.write(f"Papers in {details['category']}:")
+                            for paper in details['papers']:
+                                st.write(paper)
+                        st.markdown(button_html, unsafe_allow_html=True)
 
         if print_out_paper_summaries:
             # Display paper titles and summaries
