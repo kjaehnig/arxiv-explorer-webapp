@@ -63,14 +63,14 @@ with st.sidebar:
 
     # Conditional logic to disable checkboxes based on the state of the other
     if group_color:
-        mst = st.sidebar.checkbox('MST', value=mst, disabled=True, key='mst')
-        group_color = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
+        mst_chkbox = st.sidebar.checkbox('MST', value=mst, disabled=True, key='mst')
+        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
     elif mst:
-        group_color = st.sidebar.checkbox('Group Color', value=group_color, disabled=True, key='group_color')
-        mst = st.checkbox('MST', value=mst, key='mst')
+        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, disabled=True, key='group_color')
+        mst_chkbox = st.checkbox('MST', value=mst, key='mst')
     else:
-        group_color = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
-        mst = st.sidebar.checkbox('MST', value=mst, key='mst')
+        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
+        mst_chkbox = st.sidebar.checkbox('MST', value=mst, key='mst')
 
 
 
@@ -252,7 +252,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
     net.force_atlas_2based(gravity=-50, central_gravity=0.01, spring_length=100, spring_strength=0.05)
 
-    if group_color:
+    if group_color_chkbox:
         # Calculate group identifiers based on category overlap
         paper_group = calculate_category_groups_dfs(papers)
 
@@ -274,7 +274,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             for j in range(i + 1, len(papers)):
                 if similarity_matrix[i][j] > threshold:
                     net.add_edge(i, j, value=float(similarity_matrix[i][j]))
-    if mst:
+    if mst_chkbox:
         # Calculate group identifiers and overlap weights
         paper_group, overlap_weights = calculate_category_groups_bfs(papers)
 
