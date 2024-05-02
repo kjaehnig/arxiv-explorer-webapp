@@ -11,15 +11,16 @@ from collections import Counter
 import nltk
 
 
-has_stopwords = False
+stopwords_not_downloaded = False
 
 try:
     stop_words = set(nltk.corpus.stopwords.words("english"))
 except:
+    stopwords_not_downloaded = True
 
-if not has_stopwords:
+if stopwords_not_downloaded:
     nltk.download('stopwords')
-
+stop_words = set(nltk.corpus.stopwords.words("english"))
 
 @st.cache_resource
 def load_pipeline_summarizer():
