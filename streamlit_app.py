@@ -168,7 +168,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.3):
     # Add edges based on similarity score, converting float32 to float
     for i in range(len(papers)):
         for j in range(i + 1, len(papers)):
-            if similarity_matrix[i][j] > threshold:
+            if similarity_matrix[i][j] > thresh_value:
                 net.add_edge(i, j, value=float(similarity_matrix[i][j]))
 
     path = "tmp/arxiv_network.html"
