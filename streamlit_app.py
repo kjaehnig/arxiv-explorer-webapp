@@ -25,13 +25,21 @@ def load_sentence_transformer():
 
 model = load_sentence_transformer()
 
-def fetch_papers(subtopic):
+
+with st.sidebar:
+    st.header("Control Panel")
+    # Sampling number input
+    max_results = st.slider('N (Max Results)', min_value=5, max_value=50, value=5)
+    if N > 10:
+        st.warning("Setting N above 10 may slow down the app.")
+
+def fetch_papers(subtopic, max_results=5):
     """Fetch papers from the arXiv API based on a subtopic."""
     url = 'http://export.arxiv.org/api/query'
     params = {
         'search_query': f'all:{subtopic}',
         'start': 0,
-        'max_results': 5
+        'max_results': max_results
     }
     response = requests.get(url, params=params)
     root = ET.fromstring(response.content)
@@ -95,7 +103,7 @@ st.title('arXiv Paper Explorer')
 subtopic = st.text_input('Enter a subtopic to search:', 'machine learning')
 
 if st.button('Fetch Papers'):
-    papers = fetch_papers(subtopic)
+    papers = fetch_papers(subtopic, max_results)
     if papers:
         st.write(f"Found {len(papers)} papers on '{subtopic}'.")
 
