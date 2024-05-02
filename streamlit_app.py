@@ -37,9 +37,10 @@ def fetch_papers(subtopic):
     root = ET.fromstring(response.content)
     papers = []
     for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
-        title = entry.find('{http://www.w3.org/2005/Atom}title').text
-        summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
-        papers.append((title, summary))
+        title = entry.find('{http://www.w3.org/2005/Atom}title').text.strip()
+        summary = entry.find('{http://www.w3.org/2005/Atom}summary').text.strip()
+        important_word = find_important_word(title, summary)
+        papers.append((title, summary, important_word))  # Append tuple with all necessary elements
     return papers
 
 def find_important_word(title, summary):
