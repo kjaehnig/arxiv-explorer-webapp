@@ -637,7 +637,7 @@ def display_interactive_legend(group_details):
             # Render the button and check if it has been pressed
             if st.button(f"Group-{idx}", key=button_key, help=f"Show papers for {group_label}"):
                 # Display an expander with the list of papers in this group
-                with st.expander(f"Papers in {group_label}"):
+                with st.expander(f"Papers in Group-{idx}"):
                     for paper in details['papers']:
                         st.write(paper)
 
