@@ -138,9 +138,9 @@ def calculate_similarity(papers):
     return similarity_matrix
 
 
-def build_interactive_network(papers, similarity_matrix, threshold=0.3):
+def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     """Build an interactive network graph based on abstract similarity, labeling nodes with unique categories."""
-    net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")
+    net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
     net.force_atlas_2based()
 
     category_count = {}
@@ -168,10 +168,11 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.3):
     # Add edges based on similarity score, converting float32 to float
     for i in range(len(papers)):
         for j in range(i + 1, len(papers)):
-            if similarity_matrix[i][j] > thresh_value:
+            if similarity_matrix[i][j] > threshold:
                 net.add_edge(i, j, value=float(similarity_matrix[i][j]))
 
     path = "tmp/arxiv_network.html"
+    net.save_graph(path)
     net.show(path)
     return path
 
