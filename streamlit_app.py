@@ -11,7 +11,7 @@ from collections import Counter
 import nltk
 
 nltk.download('stopwords')
-stop_words = set(stopwords.words("english"))
+stop_words = set(nltk.corpus.stopwords.words("english"))
 
 
 @st.cache_resource
