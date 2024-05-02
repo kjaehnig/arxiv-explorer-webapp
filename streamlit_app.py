@@ -53,6 +53,48 @@ with st.sidebar:
     if print_out_paper_summaries:
         st.warning("This is currently slow. May crash with MAQ > 20.")
 
+def calculate_category_groups(papers):
+    from collections import defaultdict
+    import itertools
+
+    # Create a dictionary to hold the category connections
+    category_connections = defaultdict(set)
+
+    # Map each paper to a set of its categories
+    paper_categories = [set(categories) for _, _, _, categories in papers]
+
+    # Compare each paper's categories with every other paper's categories
+    for i, categories_i in enumerate(paper_categories):
+        for j, categories_j in enumerate(paper_categories):
+            if i != j:
+                common_categories = categories_i.intersection(categories_j)
+                if common_categories:
+                    category_connections[i].update(common_categories)
+
+    # Generate a group number based on connectivity
+    visited = set()
+    group_id = 0
+    paper_group = {}
+
+    # Simple DFS to assign groups based on connected category components
+    def dfs(paper_index, group_id):
+        stack = [paper_index]
+        while stack:
+            node = stack.pop()
+            if node not in visited:
+                visited.add(node)
+                paper_group[node] = group_id
+                for neighbour in category_connections[node]:
+                    if neighbour not in visited:
+                        stack.append(neighbour)
+
+    for paper_index in range(len(papers)):
+        if paper_index not in visited:
+            dfs(paper_index, group_id)
+            group_id += 1
+
+    return paper_group
+
 def fetch_papers(subtopic, max_results=5):
     """Fetch papers from the arXiv API based on a subtopic and retrieve their fields."""
     url = 'http://export.arxiv.org/api/query'
@@ -68,17 +110,17 @@ def fetch_papers(subtopic, max_results=5):
     root = ET.fromstring(response.content)
     papers = []
 
-    for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
-        title = entry.find('{http://www.w3.org/2005/Atom}title').text.strip()
-        summary = entry.find('{http://www.w3.org/2005/Atom}summary').text.strip()
-        important_word = find_important_word(title, summary)
-        # Assume each entry has a category tag, often found in the 'category' element with an attribute 'term'
-        categories = [category.get('term') for category in entry.findall('{http://www.w3.org/2005/Atom}category')]
-        papers.append((title, summary, important_word, categories))
+    ns = {'atom': 'http://www.w3.org/2005/Atom'}  # Namespace dictionary
+    for entry in root.findall('atom:entry', ns):
+        title = entry.find('atom:title', ns).text.strip()
+        summary = entry.find('atom:summary', ns).text.strip()
+        all_categories = [category.get('term') for category in entry.findall('atom:category', ns)]
+        primary_category = next((category.get('term') for category in entry.findall('atom:category', ns)
+                                 if category.get('primary') == 'true'), all_categories[0] if all_categories else 'Uncategorized')
+
+        papers.append((title, summary, primary_category, all_categories))
 
     return papers
-
-
 
 
 def find_important_word(title, summary):
@@ -144,45 +186,30 @@ def calculate_similarity(papers):
 def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     """Build an interactive network graph based on abstract similarity, labeling nodes with unique categories."""
     net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
-    net.force_atlas_2based()
+    net.force_atlas_2based(gravity=-50, central_gravity=0.01, spring_length=100, spring_strength=0.05)
 
-    category_count = {}
-    nodes_labels = []
+    # Calculate group identifiers based on category overlap
+    paper_group = calculate_category_groups(papers)
 
-    # Set to keep track of already used categories
+    # Set to keep track of already used primary categories
     used_categories = set()
 
-    # Function to find a unique category for a paper
-    def get_unique_category(categories):
-        for category in categories:
-            if category not in used_categories:
-                used_categories.add(category)
-                return category
-        return None
-
-    # Add nodes with unique category labels
-    for i, (title, _, _, categories) in enumerate(papers):
-        if not categories:
-            label = "Uncategorized"
+    # Add nodes with primary categories, ensuring uniqueness where possible
+    for i, (title, _, primary_category, _) in enumerate(papers):
+        if primary_category in used_categories:
+            label = f"{primary_category} ({i})"
         else:
-            # Attempt to get a unique category, fallback to the first one with a numeric suffix if all are used
-            label = get_unique_category(categories)
-            if not label:  # All categories are already used, fallback to first category with an index
-                base_label = categories[0]
-                count = 1
-                new_label = f"{base_label} {count}"
-                while new_label in used_categories:
-                    count += 1
-                    new_label = f"{base_label} {count}"
-                used_categories.add(new_label)
-                label = new_label
+            used_categories.add(primary_category)
+            label = primary_category
 
-        net.add_node(i, label=label, title=title)
-    # Add edges based on similarity score, converting float32 to float
+        net.add_node(i, label=label, title=title, group=paper_group[i])
+
+    # Add edges based on similarity score
     for i in range(len(papers)):
         for j in range(i + 1, len(papers)):
             if similarity_matrix[i][j] > threshold:
                 net.add_edge(i, j, value=float(similarity_matrix[i][j]))
+
 
     path = "arxiv_network.html"
     net.save_graph(path)
