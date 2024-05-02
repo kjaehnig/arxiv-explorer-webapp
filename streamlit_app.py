@@ -121,7 +121,7 @@ def calculate_similarity(papers):
 
     for i in range(num_papers):
         for j in range(i + 1, num_papers):
-            similarity = calculate_cosine_similarity(abstract_sets[i], abstract_sets[j])
+            similarity = jaccard_similarity(abstract_sets[i], abstract_sets[j])
             similarity_matrix[i][j] = similarity
             similarity_matrix[j][i] = similarity  # Mirror the similarity
 
@@ -159,7 +159,7 @@ if st.button('Fetch Papers'):
         st.write(f"Found {len(papers)} papers on '{subtopic}'.")
 
         # Calculate similarities and build the network graph
-        similarity_matrix = calculate_similarity(papers)
+        similarity_matrix = calculate_cosine_similarity(papers)
         network_path = build_interactive_network(papers, similarity_matrix)
         st.components.v1.html(open(network_path, 'r').read(), height=800)
 
