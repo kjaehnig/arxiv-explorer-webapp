@@ -175,7 +175,7 @@ if st.button('Fetch Papers'):
 
         # Display paper titles and summaries
         for title, summary, _, cat in papers:
-            with st.expander(title + f"(found in {cat}")
+            with st.expander(title + f"(found in {cat}"):
                 summary_response = summarize_abstract(summary)
                 st.write(summary_response)
     else:
