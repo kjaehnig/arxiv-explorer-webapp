@@ -538,7 +538,6 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
                   font_color="white",
                   notebook=True)
     net.force_atlas_2based(gravity=-45,
-                           scale=0.25,
                            central_gravity=0.05,
                            spring_length=100,
                            spring_strength=0.05)
