@@ -72,7 +72,7 @@ def calculate_similarity(papers):
 
 def build_interactive_network(papers, similarity_matrix, threshold=0.3):
     """Build an interactive network graph based on abstract similarity."""
-    net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")
+    net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
     net.force_atlas_2based()
 
     for i, (title, _, important_word) in enumerate(papers):
@@ -85,7 +85,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.3):
                 net.add_edge(i, j, value=similarity_matrix[i][j])
 
     path = "tmp/arxiv_network.html"
-    net.show(path, notebook=False)
+    net.show(path)
     return path
 
 st.title('arXiv Paper Explorer')
