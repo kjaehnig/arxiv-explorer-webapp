@@ -568,20 +568,22 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Assign unique colors and create unique labels based on group and category info
         group_details = {}
-
         # Initialize group details
         for index, (title, _, primary_category, categories) in enumerate(papers):
             group = paper_group[index]
+            group_label = f"{primary_category.split('-')[0]} - \
+                            {arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
             if group not in group_details:
                 group_details[group] = {
                     'category': primary_category,
                     'papers': [],
-                    'color': color_palette[len(group_details) % len(color_palette)]
+                    'color': color_palette[len(group_details) % len(color_palette)],
+                    'group_label':group_label
                 }
             group_details[group]['papers'].append(title)
 
-            net.add_node(index, label=title, title=title, color=group_details[group]['color'])
+            net.add_node(index, label=group_label, title=title, color=group_details[group]['color'])
 
         # Add edges based on similarity score
         for i in range(len(papers)):
