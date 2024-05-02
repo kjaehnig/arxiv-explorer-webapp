@@ -620,7 +620,6 @@ def display_interactive_legend(group_details):
 
     # Iterate over the groups and create buttons with corresponding expanders
     for idx, (group_label, details) in enumerate(group_details.items()):
-        st.write(group_label)
         if idx % cols_per_row == 0:
             cols = st.columns(cols_per_row)  # Create a new row of columns
 
@@ -629,7 +628,6 @@ def display_interactive_legend(group_details):
 
         # Define a unique key for each button based on its index
         button_key = f"button_{idx}"
-        st.write(button_key)
         # Button CSS to set the background color and style
         button_style = f"background-color: {details['color']}; color: white; border: none; border-radius: 5px; width: 100%;"
         button_html = f"<style>.{button_key} {{ {button_style} }}</style>"
@@ -637,7 +635,7 @@ def display_interactive_legend(group_details):
         with col:
             st.markdown(button_html, unsafe_allow_html=True)
             # Render the button and check if it has been pressed
-            if st.button(group_label, key=button_key, help=f"Show papers for {group_label}"):
+            if st.button(f"Group-{idx}", key=button_key, help=f"Show papers for {group_label}"):
                 # Display an expander with the list of papers in this group
                 with st.expander(f"Papers in {group_label}"):
                     for paper in details['papers']:
