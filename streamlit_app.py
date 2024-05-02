@@ -571,8 +571,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         # Initialize group details
         for index, (title, _, primary_category, categories) in enumerate(papers):
             group = paper_group[index]
-            group_label = f"{primary_category.split('-')[0]} - \
-                            {arxiv_categories.get(primary_category, 'Other')}"
+            group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
             if group not in group_details:
                 group_details[group] = {
