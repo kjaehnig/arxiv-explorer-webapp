@@ -620,6 +620,7 @@ def display_interactive_legend(group_details):
 
     # Iterate over the groups and create buttons with corresponding expanders
     for idx, (group_label, details) in enumerate(group_details.items()):
+        st.write(group_label)
         if idx % cols_per_row == 0:
             cols = st.columns(cols_per_row)  # Create a new row of columns
 
