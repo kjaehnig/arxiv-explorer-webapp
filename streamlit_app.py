@@ -86,12 +86,44 @@ def summarize_abstract(abstract):
     return summary_text[0]['summary_text']
 
 
-def calculate_similarity(papers):
+def calculate_cosine_similarity(papers):
     """Calculate similarity between paper abstracts using embeddings."""
     abstracts = [summary for _, summary, _ in papers]
     embeddings = model.encode(abstracts)
     similarity_matrix = cosine_similarity(embeddings)
     return similarity_matrix
+
+
+def jaccard_similarity(set1, set2):
+    """Calculate Jaccard Similarity between two sets."""
+    intersection = set1.intersection(set2)
+    union = set1.union(set2)
+    if not union:
+        return 0.0
+    return len(intersection) / len(union)
+
+
+def calculate_similarity(papers):
+    """Calculate similarity between paper abstracts using Jaccard similarity."""
+    # Convert abstracts to sets of words excluding stopwords
+    abstract_sets = []
+    for _, summary, _ in papers:
+        words = set(re.findall(r'\b\w+\b', summary.lower()))
+        filtered_words = {word for word in words if word not in stop_words}
+        abstract_sets.append(filtered_words)
+
+    # Calculate Jaccard similarity for each pair of abstract sets
+    num_papers = len(abstract_sets)
+    similarity_matrix = np.zeros((num_papers, num_papers))
+
+    for i in range(num_papers):
+        for j in range(i + 1, num_papers):
+            similarity = jaccard_similarity(abstract_sets[i], abstract_sets[j])
+            similarity_matrix[i][j] = similarity
+            similarity_matrix[j][i] = similarity  # Mirror the similarity
+
+    return similarity_matrix
+
 
 
 def build_interactive_network(papers, similarity_matrix, threshold=0.3):
