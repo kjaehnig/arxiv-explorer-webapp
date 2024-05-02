@@ -145,7 +145,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=thresh_value)
     net.force_atlas_2based()
 
     for i, (title, _, important_word, cat) in enumerate(papers):
-        net.add_node(i, label=cat, title=title)
+        net.add_node(i, label=cat[0], title=title)
 
     # Add edges based on similarity score
     for i in range(len(papers)):
