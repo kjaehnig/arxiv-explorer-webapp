@@ -64,7 +64,6 @@ MarkupSafe==2.1.4
 matplotlib==3.8.2
 matplotlib-inline==0.1.6
 mdurl==0.1.2
-mkl-service==2.4.0
 ml-dtypes==0.3.2
 namex==0.0.7
 nest-asyncio==1.6.0
