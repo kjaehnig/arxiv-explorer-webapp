@@ -30,7 +30,7 @@ with st.sidebar:
     st.header("Control Panel")
     # Sampling number input
     max_results = st.slider('N (Max Results)', min_value=5, max_value=50, value=5)
-    if N > 10:
+    if max_results > 10:
         st.warning("Setting N above 10 may slow down the app.")
 
 def fetch_papers(subtopic, max_results=5):
