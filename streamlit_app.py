@@ -51,22 +51,32 @@ with st.sidebar:
 
 
 def fetch_papers(subtopic, max_results=5):
-    """Fetch papers from the arXiv API based on a subtopic."""
+    """Fetch papers from the arXiv API based on a subtopic and retrieve their fields."""
     url = 'http://export.arxiv.org/api/query'
+
+    # Construct the query to search across all categories ('cat:*') and include the subtopic in the title/abstract
+    query = f'all:{subtopic} AND cat:*'
     params = {
-        'search_query': f'all:{subtopic}',
+        'search_query': query,
         'start': 0,
-        'max_results': max_results
+        'max_results': 10
     }
     response = requests.get(url, params=params)
     root = ET.fromstring(response.content)
     papers = []
+
     for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
         title = entry.find('{http://www.w3.org/2005/Atom}title').text.strip()
         summary = entry.find('{http://www.w3.org/2005/Atom}summary').text.strip()
-        important_word = find_important_word(title, summary)
-        papers.append((title, summary, important_word))  # Append tuple with all necessary elements
+        important_word = '' #find_important_word(title, summary)
+        # Assume each entry has a category tag, often found in the 'category' element with an attribute 'term'
+        categories = [category.get('term') for category in entry.findall('{http://www.w3.org/2005/Atom}category')]
+        papers.append((title, summary, important_word, categories))
+
     return papers
+
+
+
 
 def find_important_word(title, summary):
     """Find the most important word from the title based on the abstract."""
@@ -110,7 +120,7 @@ def calculate_similarity(papers):
     """Calculate similarity between paper abstracts using Jaccard similarity."""
     # Convert abstracts to sets of words excluding stopwords
     abstract_sets = []
-    for _, summary, _ in papers:
+    for _, summary, _, _ in papers:
         words = set(re.findall(r'\b\w+\b', summary.lower()))
         filtered_words = {word for word in words if word not in stop_words}
         abstract_sets.append(filtered_words)
@@ -134,8 +144,8 @@ def build_interactive_network(papers, similarity_matrix, threshold=thresh_value)
     net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
     net.force_atlas_2based()
 
-    for i, (title, _, important_word) in enumerate(papers):
-        net.add_node(i, label=important_word, title=title)
+    for i, (title, _, important_word, cat) in enumerate(papers):
+        net.add_node(i, label=cat, title=title)
 
     # Add edges based on similarity score
     for i in range(len(papers)):
