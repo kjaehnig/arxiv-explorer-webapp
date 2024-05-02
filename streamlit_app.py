@@ -613,6 +613,35 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     net.show(path)
     return path, group_details
 
+
+# Function to display the legend with interactive buttons
+def display_interactive_legend(group_details):
+    cols_per_row = 3  # Define the number of columns in the grid
+
+    # Iterate over the groups and create buttons with corresponding expanders
+    for idx, (group_label, details) in enumerate(group_details.items()):
+        if idx % cols_per_row == 0:
+            cols = st.columns(cols_per_row)  # Create a new row of columns
+
+        # Get the correct column for the current item
+        col = cols[idx % cols_per_row]
+
+        # Define a unique key for each button based on its index
+        button_key = f"button_{idx}"
+
+        # Button CSS to set the background color and style
+        button_style = f"background-color: {details['color']}; color: white; border: none; border-radius: 5px; width: 100%;"
+        button_html = f"<style>.{button_key} {{ {button_style} }}</style>"
+
+        with col:
+            st.markdown(button_html, unsafe_allow_html=True)
+            # Render the button and check if it has been pressed
+            if st.button(group_label, key=button_key, help=f"Show papers for {group_label}"):
+                # Display an expander with the list of papers in this group
+                with st.expander(f"Papers in {group_label}"):
+                    for paper in details['papers']:
+                        st.write(paper)
+
 st.title('arXiv Paper Explorer')
 
 # User input for subtopic
@@ -630,22 +659,7 @@ if st.button('Fetch Papers'):
         st.components.v1.html(HtmlFile.read(), height=700)
 
         if show_legend:
-            st.write("### Graph Legend")
-            cols_per_row = 4  # Define number of columns in the legend grid
-            num_rows = (len(group_details) + cols_per_row - 1) // cols_per_row  # Calculate the required number of rows
-            idx = 0
-
-            for _ in range(num_rows):
-                cols = st.columns(cols_per_row)  # Create a row of columns
-                for col in cols:
-                    if idx < len(group_details):
-                        group, details = list(group_details.items())[idx]
-                        # Use Markdown to render a button with custom color
-                        button_style = f"background-color: {details['color']}; border: none; color: white;"
-                        button_html = f"<button style='{button_style}' onclick='alert(\"{details['category']}\")'>{details['category']}</button>"
-                        with col:
-                            st.markdown(button_html, unsafe_allow_html=True)
-                    idx += 1
+            display_interactive_legend(group_details)
 
         if print_out_paper_summaries:
             # Display paper titles and summaries
