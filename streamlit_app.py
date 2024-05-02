@@ -47,6 +47,9 @@ with st.sidebar:
     if max_results > 10:
         st.warning("Setting N above 10 may slow down the app.")
 
+    thresh_value = st.slider('Threshold', min_value=0.01, max_value=0.9, value=0.25)
+
+
 def fetch_papers(subtopic, max_results=5):
     """Fetch papers from the arXiv API based on a subtopic."""
     url = 'http://export.arxiv.org/api/query'
@@ -126,7 +129,7 @@ def calculate_similarity(papers):
 
 
 
-def build_interactive_network(papers, similarity_matrix, threshold=0.3):
+def build_interactive_network(papers, similarity_matrix, threshold=thresh_value):
     """Build an interactive network graph based on abstract similarity."""
     net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
     net.force_atlas_2based()
