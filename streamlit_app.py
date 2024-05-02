@@ -250,15 +250,7 @@ def calculate_similarity(papers):
 def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     """Build an interactive network graph based on abstract similarity, labeling nodes with unique categories."""
     net = Network(height="700px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
-    net.set_options("""
-        var options = {
-          nodes: {
-            font: {
-              size: 24,  // Set font size to 24
-            }
-          }
-        }
-    """)
+
     net.force_atlas_2based(gravity=-50, central_gravity=0.01, spring_length=100, spring_strength=0.05)
 
     if group_color_chkbox:
