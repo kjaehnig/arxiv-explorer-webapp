@@ -43,15 +43,15 @@ model = load_sentence_transformer()
 with st.sidebar:
     st.header("Control Panel")
     # Sampling number input
-    max_results = st.slider('N (Max Results)', min_value=5, max_value=30, value=5)
+    max_results = st.slider('Max Arxiv Queries (MAQ)', min_value=5, max_value=30, value=5)
     if max_results > 10:
-        st.warning("Setting N above 10 may slow down the app.")
+        st.warning("Setting MAQ above 10 may slow down the app.")
 
-    thresh_value = st.slider('Threshold', min_value=0.01, max_value=0.9, value=0.25)
+    thresh_value = st.slider('Similarity Threshold', min_value=0.01, max_value=0.99, value=0.25)
 
-    print_out_paper_summaries = st.sidebar.checkbox('Get summaries with Sentence-Transformer?', value=True)
+    print_out_paper_summaries = st.sidebar.checkbox('Get summaries with Sentence-Transformer?', value=False)
     if print_out_paper_summaries:
-        st.warning("This is currently slow. May crash with N > 20.")
+        st.warning("This is currently slow. May crash with MAQ > 20.")
 
 def fetch_papers(subtopic, max_results=5):
     """Fetch papers from the arXiv API based on a subtopic and retrieve their fields."""
