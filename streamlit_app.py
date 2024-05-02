@@ -628,7 +628,7 @@ def display_interactive_legend(group_details):
 
         # Define a unique key for each button based on its index
         button_key = f"button_{idx}"
-
+        st.write(button_key)
         # Button CSS to set the background color and style
         button_style = f"background-color: {details['color']}; color: white; border: none; border-radius: 5px; width: 100%;"
         button_html = f"<style>.{button_key} {{ {button_style} }}</style>"
