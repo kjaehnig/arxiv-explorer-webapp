@@ -19,6 +19,7 @@ except:
     stopwords_not_downloaded = True
 
 if stopwords_not_downloaded:
+    st.write("downloading NLTK stopwords...")
     nltk.download('stopwords')
 stop_words = set(nltk.corpus.stopwords.words("english"))
 
