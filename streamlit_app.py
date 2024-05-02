@@ -85,7 +85,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.3):
                 net.add_edge(i, j, value=similarity_matrix[i][j])
 
     path = "tmp/arxiv_network.html"
-    net.show(path)
+    net.show(path, notebook=False)
     return path
 
 st.title('arXiv Paper Explorer')
