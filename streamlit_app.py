@@ -55,9 +55,9 @@ def fetch_papers(subtopic, max_results=5):
     url = 'http://export.arxiv.org/api/query'
 
     # Construct the query to search across all categories ('cat:*') and include the subtopic in the title/abstract
-    query = f'all:{subtopic} AND cat:*'
+    # query = f'all:{subtopic} AND cat:*'
     params = {
-        'search_query': query,
+        'search_query': f"all: {subtopic}",
         'start': 0,
         'max_results': 10
     }
@@ -68,7 +68,7 @@ def fetch_papers(subtopic, max_results=5):
     for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
         title = entry.find('{http://www.w3.org/2005/Atom}title').text.strip()
         summary = entry.find('{http://www.w3.org/2005/Atom}summary').text.strip()
-        important_word = '' #find_important_word(title, summary)
+        important_word = find_important_word(title, summary)
         # Assume each entry has a category tag, often found in the 'category' element with an attribute 'term'
         categories = [category.get('term') for category in entry.findall('{http://www.w3.org/2005/Atom}category')]
         papers.append((title, summary, important_word, categories))
