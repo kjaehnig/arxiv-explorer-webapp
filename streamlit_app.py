@@ -5,9 +5,10 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from pyvis.network import Network
+import networkx as nx
 from transformers import pipeline
 import re
-from collections import Counter
+from collections import Counter, defaultdict, deque
 import nltk
 
 
@@ -53,7 +54,34 @@ with st.sidebar:
     if print_out_paper_summaries:
         st.warning("This is currently slow. May crash with MAQ > 20.")
 
-def calculate_category_groups(papers):
+    # Label for the group of checkboxes
+    st.subheader('Network Layout')
+
+    # Check if either checkbox is already selected (preserves state across runs)
+    group_color = st.session_state.get('group_color', False)
+    mst = st.session_state.get('mst', False)
+
+    # Conditional logic to disable checkboxes based on the state of the other
+    if group_color:
+        mst = st.sidebar.checkbox('MST', value=mst, disabled=True, key='mst')
+        group_color = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
+    elif mst:
+        group_color = st.sidebar.checkbox('Group Color', value=group_color, disabled=True, key='group_color')
+        mst = st.checkbox('MST', value=mst, key='mst')
+    else:
+        group_color = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
+        mst = st.sidebar.checkbox('MST', value=mst, key='mst')
+
+    # Update the session state based on the user input
+    st.session_state.group_color = group_color
+    st.session_state.mst = mst
+
+    # Display the current state of checkboxes (for demonstration)
+    st.write('Group Color:', group_color)
+    st.write('MST:', mst)
+
+
+def calculate_category_groups_dfs(papers):
     from collections import defaultdict
     import itertools
 
@@ -94,6 +122,44 @@ def calculate_category_groups(papers):
             group_id += 1
 
     return paper_group
+
+def calculate_category_groups_bfs(papers):
+    # Map each paper to a set of its categories
+    paper_categories = [set(categories) for _, _, _, categories in papers]
+
+    # Create an adjacency list based on category overlap
+    adjacency_list = defaultdict(list)
+    for i in range(len(papers)):
+        for j in range(i + 1, len(papers)):
+            overlap = len(paper_categories[i].intersection(paper_categories[j]))
+            if overlap > 0:  # There is some overlap
+                adjacency_list[i].append((j, overlap))
+                adjacency_list[j].append((i, overlap))
+
+    # Use BFS to assign groups based on connectivity
+    visited = set()
+    group_id = 0
+    paper_group = {}
+    overlap_weights = {}
+
+    def bfs(start):
+        queue = deque([start])
+        while queue:
+            node = queue.popleft()
+            if node not in visited:
+                visited.add(node)
+                paper_group[node] = group_id
+                for neighbour, weight in adjacency_list[node]:
+                    if neighbour not in visited:
+                        queue.append(neighbour)
+                        overlap_weights[(node, neighbour)] = weight
+
+    for paper_index in range(len(papers)):
+        if paper_index not in visited:
+            bfs(paper_index)
+            group_id += 1
+
+    return paper_group, overlap_weights
 
 def fetch_papers(subtopic, max_results=5):
     """Fetch papers from the arXiv API based on a subtopic and retrieve their fields."""
@@ -188,28 +254,46 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
     net.force_atlas_2based(gravity=-50, central_gravity=0.01, spring_length=100, spring_strength=0.05)
 
-    # Calculate group identifiers based on category overlap
-    paper_group = calculate_category_groups(papers)
+    if group_color:
+        # Calculate group identifiers based on category overlap
+        paper_group = calculate_category_groups_dfs(papers)
 
-    # Set to keep track of already used primary categories
-    used_categories = set()
+        # Set to keep track of already used primary categories
+        used_categories = set()
 
-    # Add nodes with primary categories, ensuring uniqueness where possible
-    for i, (title, _, primary_category, _) in enumerate(papers):
-        if primary_category in used_categories:
-            label = f"{primary_category} ({i})"
-        else:
-            used_categories.add(primary_category)
-            label = primary_category
+        # Add nodes with primary categories, ensuring uniqueness where possible
+        for i, (title, _, primary_category, _) in enumerate(papers):
+            if primary_category in used_categories:
+                label = f"{primary_category} ({i})"
+            else:
+                used_categories.add(primary_category)
+                label = primary_category
 
-        net.add_node(i, label=label, title=title, group=paper_group[i])
+            net.add_node(i, label=label, title=title, group=paper_group[i])
 
-    # Add edges based on similarity score
-    for i in range(len(papers)):
-        for j in range(i + 1, len(papers)):
-            if similarity_matrix[i][j] > threshold:
-                net.add_edge(i, j, value=float(similarity_matrix[i][j]))
+        # Add edges based on similarity score
+        for i in range(len(papers)):
+            for j in range(i + 1, len(papers)):
+                if similarity_matrix[i][j] > threshold:
+                    net.add_edge(i, j, value=float(similarity_matrix[i][j]))
+    if mst:
+        # Calculate group identifiers and overlap weights
+        paper_group, overlap_weights = calculate_category_groups_bfs(papers)
 
+        # Build a graph to calculate MST
+        G = nx.Graph()
+        for (i, j), weight in overlap_weights.items():
+            G.add_edge(i, j, weight=-weight)  # Negative weight for maximum overlap (MST inverts to minimum)
+
+        mst = nx.minimum_spanning_tree(G, weight='weight')  # Calculate MST
+
+        # Add nodes and edges from MST to pyvis network
+        for node in mst.nodes:
+            title, _, primary_category, _ = papers[node]
+            net.add_node(node, label=primary_category, title=title, group=paper_group[node])
+
+        for i, j in mst.edges:
+            net.add_edge(i, j, value=float(overlap_weights[(i, j)]))
 
     path = "arxiv_network.html"
     net.save_graph(path)
