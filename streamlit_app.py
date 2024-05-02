@@ -121,7 +121,7 @@ def calculate_similarity(papers):
 
     for i in range(num_papers):
         for j in range(i + 1, num_papers):
-            similarity = jaccard_similarity(abstract_sets[i], abstract_sets[j])
+            similarity = jaccard_simcalculate_cosine_similarityilarity(abstract_sets[i], abstract_sets[j])
             similarity_matrix[i][j] = similarity
             similarity_matrix[j][i] = similarity  # Mirror the similarity
 
