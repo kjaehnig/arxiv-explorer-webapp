@@ -59,7 +59,7 @@ def fetch_papers(subtopic, max_results=5):
     params = {
         'search_query': f"all: {subtopic}",
         'start': 0,
-        'max_results': 10
+        'max_results': max_results
     }
     response = requests.get(url, params=params)
     root = ET.fromstring(response.content)
@@ -146,25 +146,35 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     category_count = {}
     nodes_labels = []
 
-    # Prepare unique category labels for each paper
-    for _, _, _, categories in papers:
-        if not categories:  # Handle cases where no category data is available
-            category = "Uncategorized"
+    # Set to keep track of already used categories
+    used_categories = set()
+
+    # Function to find a unique category for a paper
+    def get_unique_category(categories):
+        for category in categories:
+            if category not in used_categories:
+                used_categories.add(category)
+                return category
+        return None
+
+    # Add nodes with unique category labels
+    for i, (title, _, _, categories) in enumerate(papers):
+        if not categories:
+            label = "Uncategorized"
         else:
-            category = categories[0]  # Assuming we use the first category listed if there are multiple
-        if category in category_count:
-            category_count[category] += 1
-            label = f"{category} {category_count[category]}"
-        else:
-            category_count[category] = 1
-            label = category
+            # Attempt to get a unique category, fallback to the first one with a numeric suffix if all are used
+            label = get_unique_category(categories)
+            if not label:  # All categories are already used, fallback to first category with an index
+                base_label = categories[0]
+                count = 1
+                new_label = f"{base_label} {count}"
+                while new_label in used_categories:
+                    count += 1
+                    new_label = f"{base_label} {count}"
+                used_categories.add(new_label)
+                label = new_label
 
-        nodes_labels.append(label)
-
-    # Add nodes with unique labels
-    for i, (title, _, _, _) in enumerate(papers):
-        net.add_node(i, label=nodes_labels[i], title=title)
-
+        net.add_node(i, label=label, title=title)
     # Add edges based on similarity score, converting float32 to float
     for i in range(len(papers)):
         for j in range(i + 1, len(papers)):
