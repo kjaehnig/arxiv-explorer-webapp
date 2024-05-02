@@ -603,7 +603,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     path = "arxiv_network.html"
     net.save_graph(path)
     net.show(path)
-    return net, group_colors
+    return path, group_colors
 
 st.title('arXiv Paper Explorer')
 
