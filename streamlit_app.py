@@ -253,22 +253,26 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
     net.force_atlas_2based(gravity=-50, central_gravity=0.01, spring_length=100, spring_strength=0.05)
 
+    # Set to keep track of already used primary categories
+    used_categories = set()
+
+    unique_labels = []
+    # Add nodes with primary categories, ensuring uniqueness where possible
+    for i, (title, _, primary_category, _) in enumerate(papers):
+        if primary_category in used_categories:
+            label = f"{primary_category} ({i})"
+            unique_labels.append(label)
+        else:
+            used_categories.add(primary_category)
+            label = primary_category
+            unique_labels.append(label)
+
     if group_color_chkbox:
         # Calculate group identifiers based on category overlap
         paper_group = calculate_category_groups_dfs(papers)
 
-        # Set to keep track of already used primary categories
-        used_categories = set()
-
-        # Add nodes with primary categories, ensuring uniqueness where possible
         for i, (title, _, primary_category, _) in enumerate(papers):
-            if primary_category in used_categories:
-                label = f"{primary_category} ({i})"
-            else:
-                used_categories.add(primary_category)
-                label = primary_category
-
-            net.add_node(i, label=label, title=title, group=paper_group[i])
+            net.add_node(i, label=unique_labels[i], title=title, group=paper_group[i])
 
         # Add edges based on similarity score
         for i in range(len(papers)):
@@ -287,9 +291,9 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         mst = nx.minimum_spanning_tree(G, weight='weight')  # Calculate MST
 
         # Add nodes and edges from MST to pyvis network
-        for node in mst.nodes:
+        for i, node in enumerate(mst.nodes):
             title, _, primary_category, _ = papers[node]
-            net.add_node(node, label=primary_category, title=title, group=paper_group[node])
+            net.add_node(node, label=unique_labels[i], title=title, group=paper_group[node])
 
         for i, j in mst.edges:
             net.add_edge(i, j, value=float(overlap_weights[(i, j)]))
