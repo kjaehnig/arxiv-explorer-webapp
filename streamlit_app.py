@@ -101,7 +101,7 @@ def summarize_abstract(abstract):
 
 def calculate_cosine_similarity(papers):
     """Calculate similarity between paper abstracts using embeddings."""
-    abstracts = [summary for _, summary, _ in papers]
+    abstracts = [summary for _, summary, _, _ in papers]
     embeddings = model.encode(abstracts)
     similarity_matrix = cosine_similarity(embeddings)
     return similarity_matrix
