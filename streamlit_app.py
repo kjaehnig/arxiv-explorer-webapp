@@ -624,7 +624,7 @@ if st.button('Fetch Papers'):
 
         # Calculate similarities and build the network graph
         similarity_matrix = calculate_cosine_similarity(papers)
-        network_path, group_colors = build_interactive_network(papers, similarity_matrix)
+        network_path, group_details = build_interactive_network(papers, similarity_matrix)
         HtmlFile = open(network_path, 'r', encoding='utf-8')
         st.components.v1.html(HtmlFile.read(), height=700)
 
