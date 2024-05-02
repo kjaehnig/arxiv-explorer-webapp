@@ -8,7 +8,7 @@ from pyvis.network import Network
 @st.cache(allow_output_mutation=True)
 def load_pipeline_summarizer():
     # Initialize the BART summarization pipeline
-    summarizer = pipeline("summarization", "bart-large-scientific-lay-summarisation")
+    summarizer = pipeline("summarization", "facebook/bart-large-cnn")
     return summarizer
 
 summarizer = load_pipeline_summarizer()
