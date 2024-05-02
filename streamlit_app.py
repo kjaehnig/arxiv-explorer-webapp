@@ -630,7 +630,7 @@ if st.button('Fetch Papers'):
                     # Use markdown with a colored box to represent the group color
                     st.markdown(f"<span style='color:{color};'>&#9632;</span> {group}",
                                 unsafe_allow_html=True)
-        Explanation:
+
         if print_out_paper_summaries:
             # Display paper titles and summaries
             for title, summary, _, cat in papers:
