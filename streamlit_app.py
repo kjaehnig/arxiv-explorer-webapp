@@ -72,9 +72,7 @@ with st.sidebar:
         group_color = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
         mst = st.sidebar.checkbox('MST', value=mst, key='mst')
 
-    # Update the session state based on the user input
-    st.session_state.group_color = group_color
-    st.session_state.mst = mst
+
 
     # Display the current state of checkboxes (for demonstration)
     st.write('Group Color:', group_color)
