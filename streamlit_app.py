@@ -5,8 +5,13 @@ from transformers import pipeline
 import networkx as nx
 from pyvis.network import Network
 
-# Initialize the BART summarization pipeline
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+@st.cache(allow_output_mutation=True)
+def load_pipeline_summarizer():
+    # Initialize the BART summarization pipeline
+    summarizer = pipeline("summarization", "bart-large-scientific-lay-summarisation")
+    return summarizer
+
+summarizer = load_pipeline_summarizer()
 
 def fetch_papers(subtopic):
     """Fetch papers from the arXiv API based on a subtopic."""
