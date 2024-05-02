@@ -1,17 +1,28 @@
 import streamlit as st
 import requests
 import xml.etree.ElementTree as ET
-from transformers import pipeline
-import networkx as nx
+from sentence_transformers import SentenceTransformer
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 from pyvis.network import Network
+from transformers import pipeline
+import re
+from collections import Counter
 
-@st.cache(allow_output_mutation=True)
+@st.cache_resource(allow_output_mutation=True)
 def load_pipeline_summarizer():
     # Initialize the BART summarization pipeline
-    summarizer = pipeline("summarization", "Falconsai/text_summarization")
+    # summarizer = pipeline("summarization", "Falconsai/text_summarization")
+    summarizer = pipeline("summarization", "pszemraj/led-base-book-summary")
     return summarizer
 
 summarizer = load_pipeline_summarizer()
+
+@st.cache_resource(allow_output_mutation=True)
+def load_sentence_transformer():
+    sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2')
+    return sentence_transformer
+
 
 def fetch_papers(subtopic):
     """Fetch papers from the arXiv API based on a subtopic."""
@@ -19,7 +30,7 @@ def fetch_papers(subtopic):
     params = {
         'search_query': f'all:{subtopic}',
         'start': 0,
-        'max_results': 10
+        'max_results': 5
     }
     response = requests.get(url, params=params)
     root = ET.fromstring(response.content)
@@ -30,27 +41,47 @@ def fetch_papers(subtopic):
         papers.append((title, summary))
     return papers
 
-def summarize_text(text):
-    """Generate a summary for a general audience using BART."""
-    summary_text = summarizer(text, max_length=130, min_length=30, do_sample=False)
+def find_important_word(title, summary):
+    """Find the most important word from the title based on the abstract."""
+    title_words = set(re.findall(r'\b\w+\b', title.lower()))
+    summary_words = re.findall(r'\b\w+\b', summary.lower())
+    common_words = title_words.intersection(summary_words)
+    if common_words:
+        # Select the most frequent common word in the summary
+        summary_word_count = Counter(summary_words)
+        most_important = sorted(common_words, key=lambda x: summary_word_count[x], reverse=True)[0]
+        return most_important
+    return title.split()[0]  # Fallback to the first word of the title if no common word is found
+
+
+def summarize_abstract(abstract):
+    """Generate a summary for an abstract using a pretrained model."""
+    summary_text = summarizer(abstract, max_length=130, min_length=30, do_sample=False)
     return summary_text[0]['summary_text']
 
-def build_interactive_network(papers):
-    """Build an interactive network graph using pyvis."""
+
+def calculate_similarity(papers):
+    """Calculate similarity between paper abstracts using embeddings."""
+    abstracts = [summary for _, summary, _ in papers]
+    embeddings = model.encode(abstracts)
+    similarity_matrix = cosine_similarity(embeddings)
+    return similarity_matrix
+
+
+def build_interactive_network(papers, similarity_matrix, threshold=0.3):
+    """Build an interactive network graph based on abstract similarity."""
     net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")
     net.force_atlas_2based()
 
-    for title, _ in papers:
-        words = title.split()
-        for word in words:
-            net.add_node(word, title=word)
+    for i, (title, _, important_word) in enumerate(papers):
+        net.add_node(i, label=important_word, title=title)
 
-    for title, _ in papers:
-        words = title.split()
-        for i in range(len(words) - 1):
-            net.add_edge(words[i], words[i+1])
+    # Add edges based on similarity score
+    for i in range(len(papers)):
+        for j in range(i + 1, len(papers)):
+            if similarity_matrix[i][j] > threshold:
+                net.add_edge(i, j, value=similarity_matrix[i][j])
 
-    # Save and read the network to integrate it with Streamlit
     path = "tmp/arxiv_network.html"
     net.show(path)
     return path
@@ -65,14 +96,15 @@ if st.button('Fetch Papers'):
     if papers:
         st.write(f"Found {len(papers)} papers on '{subtopic}'.")
 
-        # Display paper titles and summaries
-        for title, summary in papers:
-            with st.expander(title):
-                summary_response = summarize_text(summary)
-                st.write(summary_response)
-
-        # Build and display the interactive network graph
-        network_path = build_interactive_network(papers)
+        # Calculate similarities and build the network graph
+        similarity_matrix = calculate_similarity(papers)
+        network_path = build_interactive_network(papers, similarity_matrix)
         st.components.v1.html(open(network_path, 'r').read(), height=800)
+
+        # Display paper titles and summaries
+        for title, summary, _ in papers:
+            with st.expander(title):
+                summary_response = summarize_abstract(summary)
+                st.write(summary_response)
     else:
         st.write("No papers found.")
