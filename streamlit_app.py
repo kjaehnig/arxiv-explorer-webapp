@@ -11,6 +11,151 @@ import re
 from collections import Counter, defaultdict, deque
 import nltk
 
+# all arxiv taxonomic categories
+arxiv_categories = {
+    # Physics
+    'astro-ph': 'Astrophysics',
+    'astro-ph.CO': 'Cosmology and Nongalactic Astrophysics',
+    'astro-ph.EP': 'Earth and Planetary Astrophysics',
+    'astro-ph.GA': 'Astrophysics of Galaxies',
+    'astro-ph.HE': 'High Energy Astrophysical Phenomena',
+    'astro-ph.IM': 'Instrumentation and Methods for Astrophysics',
+    'astro-ph.SR': 'Solar and Stellar Astrophysics',
+    'cond-mat.dis-nn': 'Disordered Systems and Neural Networks',
+    'cond-mat.mes-hall': 'Mesoscale and Nanoscale Physics',
+    'cond-mat.mtrl-sci': 'Materials Science',
+    'cond-mat.other': 'Other Condensed Matter',
+    'cond-mat.quant-gas': 'Quantum Gases',
+    'cond-mat.soft': 'Soft Condensed Matter',
+    'cond-mat.stat-mech': 'Statistical Mechanics',
+    'cond-mat.str-el': 'Strongly Correlated Electrons',
+    'cond-mat.supr-con': 'Superconductivity',
+    'gr-qc': 'General Relativity and Quantum Cosmology',
+    'hep-ex': 'High Energy Physics - Experiment',
+    'hep-lat': 'High Energy Physics - Lattice',
+    'hep-ph': 'High Energy Physics - Phenomenology',
+    'hep-th': 'High Energy Physics - Theory',
+    'math-ph': 'Mathematical Physics',
+    'nlin.AO': 'Adaptation and Self-Organizing Systems',
+    'nlin.CG': 'Cellular Automata and Lattice Gases',
+    'nlin.CD': 'Chaotic Dynamics',
+    'nlin.SI': 'Exactly Solvable and Integrable Systems',
+    'nlin.PS': 'Pattern Formation and Solitons',
+    'nucl-ex': 'Nuclear Experiment',
+    'nucl-th': 'Nuclear Theory',
+    'physics.acc-ph': 'Accelerator Physics',
+    'physics.ao-ph': 'Atmospheric and Oceanic Physics',
+    'physics.atom-ph': 'Atomic Physics',
+    'physics.atm-clus': 'Atomic and Molecular Clusters',
+    'physics.bio-ph': 'Biological Physics',
+    'physics.chem-ph': 'Chemical Physics',
+    'physics.class-ph': 'Classical Physics',
+    'physics.comp-ph': 'Computational Physics',
+    'physics.data-an': 'Data Analysis, Statistics and Probability',
+    'physics.flu-dyn': 'Fluid Dynamics',
+    'physics.gen-ph': 'General Physics',
+    'physics.geo-ph': 'Geophysics',
+    'physics.hist-ph': 'History and Philosophy of Physics',
+    'physics.ins-det': 'Instrumentation and Detectors',
+    'physics.med-ph': 'Medical Physics',
+    'physics.optics': 'Optics',
+    'physics.ed-ph': 'Physics Education',
+    'physics.soc-ph': 'Physics and Society',
+    'physics.plasm-ph': 'Plasma Physics',
+    'physics.pop-ph': 'Popular Physics',
+    'physics.space-ph': 'Space Physics',
+    'quant-ph': 'Quantum Physics',
+
+    # Mathematics
+    'math.AC': 'Commutative Algebra',
+    'math.AG': 'Algebraic Geometry',
+    'math.AP': 'Analysis of PDEs',
+    'math.AT': 'Algebraic Topology',
+    'math.CA': 'Classical Analysis and ODEs',
+    'math.CO': 'Combinatorics',
+    'math.CT': 'Category Theory',
+    'math.CV': 'Complex Variables',
+    'math.DG': 'Differential Geometry',
+    'math.DS': 'Dynamical Systems',
+    'math.FA': 'Functional Analysis',
+    'math.GM': 'General Mathematics',
+    'math.GN': 'General Topology',
+    'math.GR': 'Group Theory',
+    'math.GT': 'Geometric Topology',
+    'math.HO': 'History and Overview',
+    'math.IT': 'Information Theory',
+    'math.KT': 'K-Theory and Homology',
+    'math.LO': 'Logic',
+    'math.MP': 'Mathematical Physics',
+    'math.MG': 'Metric Geometry',
+    'math.NT': 'Number Theory',
+    'math.NA': 'Numerical Analysis',
+    'math.OA': 'Operator Algebras',
+    'math.OC': 'Optimization and Control',
+    'math.PR': 'Probability',
+    'math.QA': 'Quantum Algebra',
+    'math.RT': 'Representation Theory',
+    'math.RA': 'Rings and Algebras',
+    'math.SP': 'Spectral Theory',
+    'math.ST': 'Statistics Theory',
+    'math.SG': 'Symplectic Geometry',
+
+    # Computer Science
+    'cs.AI': 'Artificial Intelligence',
+    'cs.AR': 'Hardware Architecture',
+    'cs.CC': 'Computational Complexity',
+    'cs.CE': 'Computational Engineering, Finance, and Science',
+    'cs.CG': 'Computational Geometry',
+    'cs.CL': 'Computation and Language',
+    'cs.CR': 'Cryptography and Security',
+    'cs.CV': 'Computer Vision and Pattern Recognition',
+    'cs.CY': 'Computers and Society',
+    'cs.DB': 'Databases',
+    'cs.DC': 'Distributed, Parallel, and Cluster Computing',
+    'cs.DL': 'Digital Libraries',
+    'cs.DM': 'Discrete Mathematics',
+    'cs.DS': 'Data Structures and Algorithms',
+    'cs.ET': 'Emerging Technologies',
+    'cs.FL': 'Formal Languages and Automata Theory',
+    'cs.GL': 'General Literature',
+    'cs.GR': 'Graphics',
+    'cs.GT': 'Computer Science and Game Theory',
+    'cs.HC': 'Human-Computer Interaction',
+    'cs.IR': 'Information Retrieval',
+    'cs.IT': 'Information Theory',
+    'cs.LG': 'Machine Learning',
+    'cs.LO': 'Logic in Computer Science',
+    'cs.MA': 'Multiagent Systems',
+    'cs.MM': 'Multimedia',
+    'cs.MS': 'Mathematical Software',
+    'cs.NA': 'Numerical Analysis',
+    'cs.NE': 'Neural and Evolutionary Computing',
+    'cs.NI': 'Networking and Internet Architecture',
+    'cs.OH': 'Other Computer Science',
+    'cs.OS': 'Operating Systems',
+    'cs.PF': 'Performance',
+    'cs.PL': 'Programming Languages',
+    'cs.RO': 'Robotics',
+    'cs.SC': 'Symbolic Computation',
+    'cs.SD': 'Sound',
+    'cs.SE': 'Software Engineering',
+    'cs.SI': 'Social and Information Networks',
+    'cs.SY': 'Systems and Control',
+    'eess.AS': 'Audio and Speech Processing',
+    'eess.IV': 'Image and Video Processing',
+    'eess.SP': 'Signal Processing',
+
+    # Other categories
+    'econ.EM': 'Econometrics',
+    'q-bio': 'Quantitative Biology',
+    'q-fin': 'Quantitative Finance',
+    'stat.AP': 'Applications',
+    'stat.CO': 'Computation',
+    'stat.ML': 'Machine Learning',
+    'stat.ME': 'Methodology',
+    'stat.OT': 'Other Statistics',
+    'stat.TH': 'Theory',
+}
 
 stopwords_not_downloaded = False
 
@@ -79,15 +224,69 @@ with st.sidebar:
     st.write('MST:', mst)
 
 
+# def calculate_category_groups_dfs(papers):
+#     from collections import defaultdict
+#     import itertools
+#
+#     # Create a dictionary to hold the category connections
+#     category_connections = defaultdict(set)
+#
+#     # Map each paper to a set of its categories
+#     paper_categories = [set(categories) for _, _, _, categories in papers]
+#
+#     # Compare each paper's categories with every other paper's categories
+#     for i, categories_i in enumerate(paper_categories):
+#         for j, categories_j in enumerate(paper_categories):
+#             if i != j:
+#                 common_categories = categories_i.intersection(categories_j)
+#                 if common_categories:
+#                     category_connections[i].update(common_categories)
+#
+#     # Generate a group number based on connectivity
+#     visited = set()
+#     group_id = 0
+#     paper_group = {}
+#
+#     # Simple DFS to assign groups based on connected category components
+#     def dfs(paper_index, group_id):
+#         stack = [paper_index]
+#         while stack:
+#             node = stack.pop()
+#             if node not in visited:
+#                 visited.add(node)
+#                 paper_group[node] = group_id
+#                 for neighbour in category_connections[node]:
+#                     if neighbour not in visited:
+#                         stack.append(neighbour)
+#
+#     for paper_index in range(len(papers)):
+#         if paper_index not in visited:
+#             dfs(paper_index, group_id)
+#             group_id += 1
+#
+#     return paper_group
+
 def calculate_category_groups_dfs(papers):
     from collections import defaultdict
-    import itertools
+
+    # Function to parse categories into main and sub-subject components
+    def parse_categories(categories):
+        parsed_categories = set()
+        for cat in categories:
+            if '-' in cat:
+                main_cat, sub_cat = cat.split('-', 1)
+                full_name = arxiv_categories.get(cat, cat)
+                main_subject = full_name.split(' - ')[0] if ' - ' in full_name else full_name
+                parsed_categories.add((main_cat, sub_cat, main_subject))
+            else:
+                parsed_categories.add((cat, '', arxiv_categories.get(cat, cat)))
+        return parsed_categories
 
     # Create a dictionary to hold the category connections
     category_connections = defaultdict(set)
 
-    # Map each paper to a set of its categories
-    paper_categories = [set(categories) for _, _, _, categories in papers]
+    # Map each paper to a set of its parsed categories
+    paper_categories = [parse_categories(categories) for _, _, _, categories in papers]
 
     # Compare each paper's categories with every other paper's categories
     for i, categories_i in enumerate(paper_categories):
