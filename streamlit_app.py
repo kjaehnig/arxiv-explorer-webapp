@@ -174,8 +174,8 @@ if st.button('Fetch Papers'):
         st.components.v1.html(open(network_path, 'r').read(), height=800)
 
         # Display paper titles and summaries
-        for title, summary, _ in papers:
-            with st.expander(title):
+        for title, summary, _, cat in papers:
+            with st.expander(title + f"(found in {cat}")
                 summary_response = summarize_abstract(summary)
                 st.write(summary_response)
     else:
