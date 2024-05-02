@@ -147,7 +147,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.3):
     nodes_labels = []
 
     # Prepare unique category labels for each paper
-    for _, _, categories in papers:
+    for _, _, _, categories in papers:
         if not categories:  # Handle cases where no category data is available
             category = "Uncategorized"
         else:
