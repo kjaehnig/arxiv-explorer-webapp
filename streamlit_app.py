@@ -157,6 +157,39 @@ arxiv_categories = {
     'stat.TH': 'Theory',
 }
 
+color_palette = [
+    "#E6194B",  # Bright Red
+    "#3CB44B",  # Bright Green
+    "#FFE119",  # Bright Yellow
+    "#4363D8",  # Bright Blue
+    "#F58231",  # Bright Orange
+    "#911EB4",  # Light Purple
+    "#42D4F4",  # Bright Cyan
+    "#F032E6",  # Bright Magenta
+    "#BFEF45",  # Light Lime
+    "#FABEBE",  # Soft Pink
+    "#469990",  # Desaturated Teal
+    "#DCBEFF",  # Light Lavender
+    "#9A6324",  # Ochre
+    "#FFFAC8",  # Light Beige
+    "#800000",  # Cranberry
+    "#AAFFC3",  # Pale Mint
+    "#808000",  # Olive
+    "#FFD8B1",  # Peach
+    "#FFFEB7",  # Light Yellow
+    "#A9A9A9",  # Bright Grey
+    "#FFD700",  # Gold
+    "#7FFFD4",  # Aquamarine
+    "#AA6E28",  # Bronze
+    "#FFC0CB",  # Pink
+    "#008080",  # Teal
+    "#0000FF",  # Pure Blue
+    "#FA8072",  # Salmon
+    "#32CD32",  # Lime Green
+    "#00008B",  # Dark Blue
+    "#800080",  # Purple
+]
+
 stopwords_not_downloaded = False
 
 try:
@@ -217,7 +250,9 @@ with st.sidebar:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
         mst_chkbox = st.sidebar.checkbox('MST', value=mst, key='mst')
 
-
+    show_legend = st.sidebar.checkbox("Display Graph Legend",
+                                      value=False,
+                                      disabled=True if mst_chkbox else False)
 
     # Display the current state of checkboxes (for demonstration)
     st.write('Group Color:', group_color)
@@ -266,29 +301,76 @@ with st.sidebar:
 #
 #     return paper_group
 
+# def calculate_category_groups_dfs(papers):
+#     from collections import defaultdict
+#
+#     # Function to parse categories into main and sub-subject components
+#     def parse_categories(categories):
+#         parsed_categories = set()
+#         for cat in categories:
+#             if '-' in cat:
+#                 main_cat, sub_cat = cat.split('-', 1)
+#                 full_name = arxiv_categories.get(cat, cat)
+#                 main_subject = full_name.split(' - ')[0] if ' - ' in full_name else full_name
+#                 parsed_categories.add((main_cat, sub_cat, main_subject))
+#             else:
+#                 parsed_categories.add((cat, '', arxiv_categories.get(cat, cat)))
+#         return parsed_categories
+#
+#     # Create a dictionary to hold the category connections
+#     category_connections = defaultdict(set)
+#
+#     # Map each paper to a set of its parsed categories
+#     paper_categories = [parse_categories(categories) for _, _, _, categories in papers]
+#
+#     # Compare each paper's categories with every other paper's categories
+#     for i, categories_i in enumerate(paper_categories):
+#         for j, categories_j in enumerate(paper_categories):
+#             if i != j:
+#                 common_categories = categories_i.intersection(categories_j)
+#                 if common_categories:
+#                     category_connections[i].update(common_categories)
+#
+#     # Generate a group number based on connectivity
+#     visited = set()
+#     group_id = 0
+#     paper_group = {}
+#
+#     # Simple DFS to assign groups based on connected category components
+#     def dfs(paper_index, group_id):
+#         stack = [paper_index]
+#         while stack:
+#             node = stack.pop()
+#             if node not in visited:
+#                 visited.add(node)
+#                 paper_group[node] = group_id
+#                 for neighbour in category_connections[node]:
+#                     if neighbour not in visited:
+#                         stack.append(neighbour)
+#
+#     for paper_index in range(len(papers)):
+#         if paper_index not in visited:
+#             dfs(paper_index, group_id)
+#             group_id += 1
+#
+#     return paper_group
+
 def calculate_category_groups_dfs(papers):
     from collections import defaultdict
 
-    # Function to parse categories into main and sub-subject components
+    # Assume categories are parsed to extract both main and sub-subject components
     def parse_categories(categories):
-        parsed_categories = set()
+        parsed = set()
         for cat in categories:
-            if '-' in cat:
-                main_cat, sub_cat = cat.split('-', 1)
-                full_name = arxiv_categories.get(cat, cat)
-                main_subject = full_name.split(' - ')[0] if ' - ' in full_name else full_name
-                parsed_categories.add((main_cat, sub_cat, main_subject))
-            else:
-                parsed_categories.add((cat, '', arxiv_categories.get(cat, cat)))
-        return parsed_categories
+            main_cat, sub_cat = cat.split('-', 1) if '-' in cat else (cat, '')
+            full_name = arxiv_categories.get(cat, "Other")
+            parsed.add((main_cat, sub_cat, full_name))
+        return parsed
 
     # Create a dictionary to hold the category connections
     category_connections = defaultdict(set)
-
-    # Map each paper to a set of its parsed categories
     paper_categories = [parse_categories(categories) for _, _, _, categories in papers]
 
-    # Compare each paper's categories with every other paper's categories
     for i, categories_i in enumerate(paper_categories):
         for j, categories_j in enumerate(paper_categories):
             if i != j:
@@ -296,12 +378,10 @@ def calculate_category_groups_dfs(papers):
                 if common_categories:
                     category_connections[i].update(common_categories)
 
-    # Generate a group number based on connectivity
     visited = set()
     group_id = 0
     paper_group = {}
 
-    # Simple DFS to assign groups based on connected category components
     def dfs(paper_index, group_id):
         stack = [paper_index]
         while stack:
@@ -357,6 +437,7 @@ def calculate_category_groups_bfs(papers):
             group_id += 1
 
     return paper_group, overlap_weights
+
 
 def fetch_papers(subtopic, max_results=5):
     """Fetch papers from the arXiv API based on a subtopic and retrieve their fields."""
@@ -447,10 +528,22 @@ def calculate_similarity(papers):
 
 
 def build_interactive_network(papers, similarity_matrix, threshold=0.25):
-    """Build an interactive network graph based on abstract similarity, labeling nodes with unique categories."""
-    net = Network(height="700px", width="100%", bgcolor="#222222", font_color="white", notebook=True)
+    """
+    Build an interactive network graph based on abstract similarity,
+    labeling nodes with unique categories.
+    """
+    net = Network(height="700px",
+                  width="100%",
+                  bgcolor="#222222",
+                  font_color="white",
+                  notebook=True)
+    net.force_atlas_2based(gravity=-50,
+                           central_gravity=0.01,
+                           spring_length=100,
+                           spring_strength=0.05)
 
-    net.force_atlas_2based(gravity=-50, central_gravity=0.01, spring_length=100, spring_strength=0.05)
+    # dict for used group colors
+    group_colors = {}
 
     # Set to keep track of already used primary categories
     used_categories = set()
@@ -470,8 +563,18 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         # Calculate group identifiers based on category overlap
         paper_group = calculate_category_groups_dfs(papers)
 
-        for i, (title, _, primary_category, _) in enumerate(papers):
-            net.add_node(i, label=unique_labels[i], title=title, group=paper_group[i])
+        # for i, (title, _, primary_category, _) in enumerate(papers):
+        #     net.add_node(i, label=unique_labels[i], title=title, group=paper_group[i])
+
+        # Assign unique colors and create unique labels based on group and category info
+        for i, (title, _, primary_category, categories) in enumerate(papers):
+            group = paper_group[i]
+            group_label = f"{primary_category.split('-')[0]} - {arxiv_categories.get(primary_category, 'Other')}"
+
+            if group not in group_colors:
+                group_colors[group] = color_palette[len(group_colors) % len(color_palette)]
+
+            net.add_node(i, label=group_label, title=title, color=group_colors[group])
 
         # Add edges based on similarity score
         for i in range(len(papers)):
@@ -500,7 +603,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     path = "arxiv_network.html"
     net.save_graph(path)
     net.show(path)
-    return path
+    return net, group_colors
 
 st.title('arXiv Paper Explorer')
 
@@ -514,9 +617,20 @@ if st.button('Fetch Papers'):
 
         # Calculate similarities and build the network graph
         similarity_matrix = calculate_cosine_similarity(papers)
-        network_path = build_interactive_network(papers, similarity_matrix)
-        st.components.v1.html(open(network_path, 'r').read(), height=800)
+        network_path, group_colors = build_interactive_network(papers, similarity_matrix)
+        HtmlFile = open(network_path, 'r', encoding='utf-8')
+        st.components.v1.html(HtmlFile.read(), height=700)
 
+        if show_legend:
+            # Create a container to display the legend
+            legend_container = st.container()
+            with legend_container:
+                st.write("### Legend")
+                for group, color in group_colors.items():
+                    # Use markdown with a colored box to represent the group color
+                    st.markdown(f"<span style='color:{color};'>&#9632;</span> {group}",
+                                unsafe_allow_html=True)
+        Explanation:
         if print_out_paper_summaries:
             # Display paper titles and summaries
             for title, summary, _, cat in papers:
