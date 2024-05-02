@@ -631,21 +631,21 @@ if st.button('Fetch Papers'):
 
         if show_legend:
             st.write("### Graph Legend")
-            cols_per_row = 5  # Define number of columns in the legend grid
-            rows = [st.container() for _ in range((len(group_details) + cols_per_row - 1) // cols_per_row)]
+            cols_per_row = 4  # Define number of columns in the legend grid
+            num_rows = (len(group_details) + cols_per_row - 1) // cols_per_row  # Calculate the required number of rows
+            idx = 0
 
-            for idx, (group, details) in enumerate(group_details.items()):
-                with rows[idx // cols_per_row]:
-                    col = st.columns(cols_per_row)[idx % cols_per_row]
-                    with col:
-                        # Create a colored button for each group
-                        button_html = f"<style>.btn-primary {{background-color: {details['color']}; border-color: {details['color']};}}</style>"
-                        button_html += f"<button class='btn btn-primary'>{details['category']}</button>"
-                        if st.button(f"", key=f"group_{idx}", help=details['category'], args=()):
-                            st.write(f"Papers in {details['category']}:")
-                            for paper in details['papers']:
-                                st.write(paper)
-                        st.markdown(button_html, unsafe_allow_html=True)
+            for _ in range(num_rows):
+                cols = st.columns(cols_per_row)  # Create a row of columns
+                for col in cols:
+                    if idx < len(group_details):
+                        group, details = list(group_details.items())[idx]
+                        # Use Markdown to render a button with custom color
+                        button_style = f"background-color: {details['color']}; border: none; color: white;"
+                        button_html = f"<button style='{button_style}' onclick='alert(\"{details['category']}\")'>{details['category']}</button>"
+                        with col:
+                            st.markdown(button_html, unsafe_allow_html=True)
+                    idx += 1
 
         if print_out_paper_summaries:
             # Display paper titles and summaries
