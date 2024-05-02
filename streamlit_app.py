@@ -8,6 +8,11 @@ from pyvis.network import Network
 from transformers import pipeline
 import re
 from collections import Counter
+import nltk.corpus import stopwords
+
+
+stopwords = set(stopwords.words("english"))
+
 
 @st.cache_resource
 def load_pipeline_summarizer():
@@ -53,8 +58,10 @@ def fetch_papers(subtopic, max_results=5):
 
 def find_important_word(title, summary):
     """Find the most important word from the title based on the abstract."""
-    title_words = set(re.findall(r'\b\w+\b', title.lower()))
+    title_words = set(re.findall(r'\b\w+\b', title.lower())) - stopwords
     summary_words = re.findall(r'\b\w+\b', summary.lower())
+    summary_words = [w for w in summary_words if w not in stopwords]
+
     common_words = title_words.intersection(summary_words)
     if common_words:
         # Select the most frequent common word in the summary
