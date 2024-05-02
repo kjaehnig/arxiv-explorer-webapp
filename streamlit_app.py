@@ -10,8 +10,15 @@ import re
 from collections import Counter
 import nltk
 
-nltk.download('stopwords')
-stop_words = set(nltk.corpus.stopwords.words("english"))
+
+has_stopwords = False
+
+try:
+    stop_words = set(nltk.corpus.stopwords.words("english"))
+except:
+
+if not has_stopwords:
+    nltk.download('stopwords')
 
 
 @st.cache_resource
