@@ -650,7 +650,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         # Add nodes and edges from MST to pyvis network
         for i, node in enumerate(mst.nodes):
             st.write(node)
-            title, _, primary_category, categories, _ = papers[node]
+            title, _, primary_category, categories, _ = papers[i]
             # group = paper_group[node]
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
