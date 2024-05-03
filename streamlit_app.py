@@ -731,7 +731,7 @@ st.title('arXiv Paper Explorer')
 subtopic = st.text_input('Enter a subtopic to search:', 'machine learning')
 
 
-allcols = st.columns(10)
+allcols = st.columns(5)
 fetch_papers_buttons = allcols[0].button('Fetch papers')
 also_summarize = allcols[1].checkbox('Summarize with LLM')
 if also_summarize:
