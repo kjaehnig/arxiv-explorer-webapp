@@ -641,6 +641,37 @@ def display_interactive_legend(group_details):
                     for paper in details['papers']:
                         st.write(paper)
 
+def display_groups_with_expanders(group_details):
+    for group_label, details in group_details.items():
+        # Create unique keys for button and expander based on group label
+        button_key = f"button_{group_label}"
+        expander_key = f"expander_{group_label}"
+
+        # Define a button with custom color and full width
+        button_style = f"background-color: {details['color']}; color: white; border-radius: 8px; border: none; width: 100%;"
+        button_html = f"<button style='{button_style}' onclick='document.getElementById(\"{expander_key}\").style.display = \"block\";'>{group_label}</button>"
+
+        # Render the button
+        st.markdown(button_html, unsafe_allow_html=True)
+
+        # Initially hidden expander for showing the papers
+        expander_html = f"<div id='{expander_key}' style='display: none;'>"
+        with st.container():
+            if st.session_state.get(button_key, False):
+                expander = st.expander(f"Papers in {group_label}", expanded=True)
+                with expander:
+                    for paper in details['papers']:
+                        st.write(paper)
+            else:
+                expander = st.expander(f"Papers in {group_label}")
+                with expander:
+                    for paper in details['papers']:
+                        st.write(paper)
+            st.session_state[button_key] = expander.expanded
+
+# Display the interactive legend
+display_groups_with_expanders(group_details)
+
 st.title('arXiv Paper Explorer')
 
 # User input for subtopic
@@ -658,7 +689,7 @@ if st.button('Fetch Papers'):
         st.components.v1.html(HtmlFile.read(), height=700)
 
         if show_legend:
-            display_interactive_legend(group_details)
+            display_groups_with_expanders(group_details)
 
         if print_out_paper_summaries:
             # Display paper titles and summaries
