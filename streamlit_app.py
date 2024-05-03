@@ -381,7 +381,7 @@ def calculate_category_groups_dfs(papers):
 
     # Create a dictionary to hold the category connections
     category_connections = defaultdict(set)
-    paper_categories = [parse_categories(categories) for _, _, _, categories in papers]
+    paper_categories = [parse_categories(categories) for _, _, _, categories, _ in papers]
 
     for i, categories_i in enumerate(paper_categories):
         for j, categories_j in enumerate(paper_categories):
@@ -745,7 +745,7 @@ if st.button('Fetch Papers'):
 
         # Calculate similarities and build the network graph
         similarity_matrix = calculate_cosine_similarity(papers)
-        network_path, group_details = build_interactive_network(papers, similarity_matrix)
+        network_path, group_details = build_interactive_network(papers, similarity_matrix, threshold=thresh_value)
         HtmlFile = open(network_path, 'r', encoding='utf-8')
         st.components.v1.html(HtmlFile.read(), height=700)
 
