@@ -599,44 +599,17 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     #         used_categories.add(primary_category)
     #         label = primary_category
     #         unique_labels.append(label)
+    # Map categories to colors
+    category_color = {cat:
+                          color_palette[i % len(color_palette)] for i, cat in enumerate(set(paper[2] for paper in papers))
+                      }
 
     if group_color_chkbox:
-        # Calculate group identifiers based on category overlap
-        # paper_group = calculate_category_groups_dfs(papers)
-        #
-        # # for i, (title, _, primary_category, _) in enumerate(papers):
-        # #     net.add_node(i, label=unique_labels[i], title=title, group=paper_group[i])
-        #
-        # # Assign unique colors and create unique labels based on group and category info
-        # # Initialize group details
-        # for index, (title, _, primary_category, categories, _) in enumerate(papers):
-        #     group = paper_group[index]
-        #     group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
-        #     # primary_category = categories[0] if categories else "Unknown"
-        #     title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
-        #
-        #     if group not in group_details:
-        #         group_details[group] = {
-        #             'category': primary_category.split('.')[0],
-        #             'papers': [],
-        #             'color': color_palette[len(group_details) % len(color_palette)],
-        #             'group_label':group_label,
-        #             'title': title_important_words
-        #         }
-        #     group_details[group]['papers'].append(title)
-        #
-        #     net.add_node(index, label=primary_category, title=title, color=group_details[group]['color'])
-        #
-        # # Add edges based on similarity score
-        # for i in range(len(papers)):
-        #     for j in range(i + 1, len(papers)):
-        #         if similarity_matrix[i][j] > threshold:
-        #             net.add_edge(i, j, value=float(similarity_matrix[i][j]))
-        # Add nodes with their respective group based on author similarity
+
         for i, (title, summary, primary_category, categories, authors) in enumerate(papers):
             group_id = int(np.argmax(author_overlap[i]))  # Assuming highest overlap defines the group
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
-            color = color_palette[i]
+            color = category_color[primary_category]
             st.write(color)
             net.add_node(i, label=group_label, title=f"{title}\n{authors}", group=group_id, color=color)
         # Add edges based on cosine similarity of summaries
@@ -652,44 +625,27 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Build a graph to calculate MST
         G = nx.Graph()
-        # for (i, j), weight in overlap_weights.items():
-        #     G.add_edge(i, j, weight=-weight)  # Negative weight for maximum overlap (MST inverts to minimum)
-        for i in range(len(distance_matrix)):
-            for j in range(i + 1, len(distance_matrix)):
-                G.add_edge(titles[i], titles[j], weight=distance_matrix[i][j])
 
-        mst = nx.minimum_spanning_tree(G, weight='weight')  # Calculate MST
+        # Add nodes with color
+        for idx, (title, _, primary_category, _, _) in enumerate(papers):
+            G.add_node(idx, label=title, color=category_color[primary_category])
+
+        # mst = nx.minimum_spanning_tree(G, weight='weight')  # Calculate MST
         # st.write(mst.nodes)
-        # Add nodes and edges from MST to pyvis network
-        for i, node in enumerate(mst.nodes):
-            # st.write(node)
-            title, summary, primary_category, categories, authors = papers[i]
-            # st.write(title)
-            # st.write(summary)
-            # st.write(primary_category)
-            # st.write(categories)
-            # st.write(authors)
-            # st.write("*"*20)
-            # group = papers[i]
-            # st.write(group)
-            group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
-            # primary_category = categories[0] if categories else "Unknown"
-            # title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
 
-            # if group not in group_details:
-            #     group_details[group] = {
-            #         'category': primary_category.split('.')[0],
-            #         'papers': [],
-            #         'color': color_palette[len(group_details) % len(color_palette)],
-            #         'group_label':group_label,
-            #         'title': title
-            #     }
-            color = color_palette[i % len(color_palette)]
-            # group_details[group]['papers'].append(title)
-            net.add_node(node, label=group_label, title=title, group=i, node_color=color)
+        # Calculate distances for MST
+        for i in range(len(papers)):
+            for j in range(i + 1, len(papers)):
+                # Combining cosine similarity and author overlap into a single metric
+                distance = 1 - (cosine_sim[i][j] * 0.5 + author_overlap[i][j] * 0.5)
+                G.add_edge(i, j, weight=float(distance))
 
-        for i, j in mst.edges:
-            net.add_edge(i, j, value=float(author_overlap[i, j]))
+        mst = nx.minimum_spanning_tree(G, weight='weight')
+
+        # Draw the MST with colors
+        pos = nx.spring_layout(mst)
+        colors = [mst.nodes[data]['color'] for data in mst]
+        nx.draw(mst, pos, with_labels=True, node_color=colors, edge_color='gray', node_size=500, font_size=10)
 
     path = "arxiv_network.html"
     net.save_graph(path)
