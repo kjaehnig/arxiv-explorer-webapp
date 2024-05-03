@@ -663,7 +663,7 @@ def build_interactive_network(papers, threshold=0.25):
             G.add_node(idx,
                        label=aid,
                        color=category_color[primary_category],
-                       title=f"{title}\n{group_label}")
+                       title=f"{title}\n[{group_label}]\n{authors}")
             for j in range(idx + 1, len(papers)):
                 # distance = 1 - (0.5 * cosine_sim[i][j] + 0.5 * author_overlap[i][j])
                 G.add_edge(idx, j, weight=float(distance_matrix[idx][j]))
