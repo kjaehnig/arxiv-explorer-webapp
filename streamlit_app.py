@@ -287,9 +287,9 @@ with st.sidebar:
     # st.write('Group Color:', group_color, ' MST:', mst)
     # st.write('MST:', mst)
 
-    print_out_paper_summaries = st.sidebar.checkbox('Print titles and abstracts?',
+    paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
                                                     value=False,
-                                                    on_change=print_out_paper_and_summaries)
+                                                    on_change=print_out_papers_and_summaries)
 
 # def calculate_category_groups_dfs(papers):
 #     from collections import defaultdict
