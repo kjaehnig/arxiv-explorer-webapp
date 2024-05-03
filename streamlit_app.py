@@ -600,7 +600,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     #         label = primary_category
     #         unique_labels.append(label)
     # Map categories to colors
-    category_color = {i:
+    category_color = {cat:
                           color_palette[i % len(color_palette)] for i, cat in enumerate(papers[2])
                       }
 
@@ -628,24 +628,23 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes with color
         for idx, (title, _, primary_category, _, _) in enumerate(papers):
-            G.add_node(idx, label=title, color=color_palette[idx])
-
-        # mst = nx.minimum_spanning_tree(G, weight='weight')  # Calculate MST
-        # st.write(mst.nodes)
-
-        # Calculate distances for MST
-        for i in range(len(papers)):
+            G.add_node(i, label=primary_category, color=category_color[primary_category], title=title)
             for j in range(i + 1, len(papers)):
-                # Combining cosine similarity and author overlap into a single metric
-                distance = 1 - (cosine_sim[i][j] * 0.5 + author_overlap[i][j] * 0.5)
-                G.add_edge(i, j, weight=float(distance))
+                # distance = 1 - (0.5 * cosine_sim[i][j] + 0.5 * author_overlap[i][j])
+                G.add_edge(i, j, weight=float(distance_matrix[i][j]))
 
         mst = nx.minimum_spanning_tree(G, weight='weight')
 
+        for node, attr in mst.nodes(data=True):
+            net.add_node(node, label=attr['label'], color=attr['color'], title=attr['title'])
+
+        for edge in mst.edges(data=True):
+            net.add_edge(edge[0], edge[1], width=2, title=f"Weight: {edge[2]['weight']:0.2f}")
+
         # Draw the MST with colors
-        pos = nx.spring_layout(mst)
-        colors = [mst.nodes[data]['color'] for data in mst]
-        nx.draw(mst, pos, with_labels=True, node_color=colors, edge_color='gray',font_size=10)
+        # pos = nx.spring_layout(mst)
+        # colors = [mst.nodes[data]['color'] for data in mst]
+        # nx.draw(mst, pos, with_labels=True, node_color=colors, edge_color='gray',font_size=10)
 
     path = "arxiv_network.html"
     net.save_graph(path)
