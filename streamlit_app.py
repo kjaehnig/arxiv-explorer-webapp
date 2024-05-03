@@ -606,7 +606,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     author_overlap = calculate_author_overlap(authors)
     cosine_sim = calculate_cosine_similarity(papers)
 
-    distance_matrix = np.sqrt(cosine_sim**2 + author_overlap**2.)#1 - (0.5 * cosine_sim + 0.5 * author_overlap)
+    distance_matrix = np.sqrt((1-cosine_sim)**2 + (1-author_overlap)**2.)#1 - (0.5 * cosine_sim + 0.5 * author_overlap)
     unique_labels = []
     # # Add nodes with primary categories, ensuring uniqueness where possible
     # for i, (title, _, primary_category, _, _) in enumerate(papers):
