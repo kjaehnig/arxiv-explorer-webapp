@@ -281,7 +281,7 @@ with st.sidebar:
 
     # Display the current state of checkboxes
     st.write('Group Color:', st.session_state.get('group_color', False), 'MST:', st.session_state.get('mst', False))
-    st.write('MST:', st.session_state.get('mst', False))
+    # st.write('MST:', st.session_state.get('mst', False))
     # Display the current state of checkboxes (for demonstration)
 
     # st.write('Group Color:', group_color, ' MST:', mst)
@@ -632,7 +632,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             color = category_color[primary_category]
             # st.write(color)
-            net.add_node(i, label=group_label, title=f"{title}\n{authors}", group=group_id, color=color)
+            net.add_node(i, label=group_label, title=f"{title}\n{authors}", color=color)
         # Add edges based on cosine similarity of summaries
         for i in range(len(papers)):
             for j in range(i + 1, len(papers)):
