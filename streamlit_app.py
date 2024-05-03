@@ -253,7 +253,7 @@ with st.sidebar:
     #     st.warning("This is currently slow. May crash with MAQ > 20.")
 
     # Label for the group of checkboxes
-    st.subheader('Network Layout')
+    st.subheader('Select Network Layout')
 
     # # Check if either checkbox is already selected (preserves state across runs)
     # group_color = st.session_state.get('group_color', True)
@@ -282,7 +282,7 @@ with st.sidebar:
     # Display the current state of checkboxes
     st.write('Group Color:', st.session_state.get('group_color', False), 'MST:', st.session_state.get('mst', False))
 
-    summarizer_chkbox = st.checkbox('Summarizer')
+    # summarizer_chkbox = st.checkbox('Summarizer', on_change=)
     # st.write('MST:', st.session_state.get('mst', False))
     # Display the current state of checkboxes (for demonstration)
 
@@ -746,15 +746,19 @@ if st.button('Fetch Papers'):
 
         with st.container():
             st.write("Paper Titles, Summaries, and Authors")
-            for title, summary, primary_cat, cat, authors in papers:
-                with st.expander(title + f" (Found in {arxiv_categories.get(primary_cat, 'Other')}"):
+            for title, summary, primary_cat, cat, authors, aid in papers:
+                with st.expander(title + f" (Found in {arxiv_categories.get(primary_cat, 'Other')})"):
                     # summary_response = summarize_abstract(summary)
+                    st.write(f"arXiv ID: {aid}")
                     st.write((ii for ii in authors))
                     st.write(summary)
+                    summary_key = f"summary-{aid}"
 
-                    if st.checkbox("Non-technical Abstract Please.", key=title):
-                        simplified_summary = summarize_abstract(summary)
-                        st.write(simplified_summary)
+                    if st.checkbox("Non-technical Abstract Please.", key=summary_key, value=False):
+                        if summary_key not in st.session_state:
+                            st.session_state[summary_key] = summarize_abstract(summary)
+                        # simplified_summary = summarize_abstract(summary)
+                        st.write(st.session_state[summary_key])
         # if show_legend:
         #     display_groups_with_expanders(group_details)
 
