@@ -254,7 +254,7 @@ with st.sidebar:
     if group_color:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
         mst_chkbox = st.sidebar.checkbox('MST', value=False, key='mst')
-    if mst:
+    elif mst:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
         mst_chkbox = st.checkbox('MST', value=mst, key='mst')
     # if not mst and not group_color:
