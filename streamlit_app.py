@@ -585,15 +585,15 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     group_details = {}
 
     unique_labels = []
-    # Add nodes with primary categories, ensuring uniqueness where possible
-    for i, (title, _, primary_category, _, _) in enumerate(papers):
-        if primary_category in used_categories:
-            label = f"{primary_category} ({i})"
-            unique_labels.append(label)
-        else:
-            used_categories.add(primary_category)
-            label = primary_category
-            unique_labels.append(label)
+    # # Add nodes with primary categories, ensuring uniqueness where possible
+    # for i, (title, _, primary_category, _, _) in enumerate(papers):
+    #     if primary_category in used_categories:
+    #         label = f"{primary_category} ({i})"
+    #         unique_labels.append(label)
+    #     else:
+    #         used_categories.add(primary_category)
+    #         label = primary_category
+    #         unique_labels.append(label)
 
     if group_color_chkbox:
         # Calculate group identifiers based on category overlap
@@ -649,8 +649,9 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes and edges from MST to pyvis network
         for i, node in enumerate(mst.nodes):
+            st.write(node)
             title, _, primary_category, categories, _ = papers[node]
-            group = paper_group[node]
+            # group = paper_group[node]
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
             title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
