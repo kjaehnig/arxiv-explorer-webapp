@@ -767,11 +767,11 @@ if st.button('Fetch Papers'):
             network_path, group_details = build_interactive_network(papers, similarity_matrix, threshold=thresh_value)
             HtmlFile = open(network_path, 'r', encoding='utf-8')
             st.components.v1.html(HtmlFile.read(), height=700)
-        with st.container():
-            paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
-                                                   value=False,
-                                                   on_change=print_out_papers_and_summaries,
-                                                   args=(papers,))
+
+        paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
+                                               value=False,
+                                               on_change=print_out_papers_and_summaries,
+                                               args=(papers,))
         # if show_legend:
         #     display_groups_with_expanders(group_details)
 
