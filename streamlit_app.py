@@ -254,9 +254,9 @@ with st.sidebar:
     # Conditional logic to disable checkboxes based on the state of the other
     if group_color:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
-        mst_chkbox = st.sidebar.checkbox('MST', value=mst, disabled=True, key='mst')
+        mst_chkbox = st.sidebar.checkbox('MST', value=mst, key='mst')
     elif mst:
-        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, disabled=True, key='group_color')
+        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
         mst_chkbox = st.checkbox('MST', value=mst, key='mst')
     else:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
