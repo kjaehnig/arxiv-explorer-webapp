@@ -654,7 +654,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             # group = paper_group[node]
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
-            title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
+            # title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
 
             if group not in group_details:
                 group_details[group] = {
@@ -662,7 +662,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
                     'papers': [],
                     'color': color_palette[len(group_details) % len(color_palette)],
                     'group_label':group_label,
-                    'title': title_important_words
+                    'title': title
                 }
             group_details[group]['papers'].append(title)
             net.add_node(node, label=group_label, title=title, group=paper_group[node], node_color=group_details[group]['color'])
