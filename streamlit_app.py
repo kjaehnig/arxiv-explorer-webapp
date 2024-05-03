@@ -505,7 +505,7 @@ def summarize_abstract(abstract):
 
 def preprocess_text(text):
     text = text.translate(str.maketrans('', '', string.punctuation))
-    stop_words = set(stop_words.words('english'))
+    # stop_words = set(stop_words.words('english'))
     return ' '.join([word for word in text.lower().split() if word not in stop_words])
 
 
