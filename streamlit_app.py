@@ -685,7 +685,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             #     }
             color = color_palette[i % len(color_palette)]
             # group_details[group]['papers'].append(title)
-            net.add_node(node, label=group_label, title=title, group=paper_group[node], node_color=color)
+            net.add_node(node, label=group_label, title=title, group=i, node_color=color)
 
         for i, j in mst.edges:
             net.add_edge(i, j, value=float(overlap_weights[(i, j)]))
