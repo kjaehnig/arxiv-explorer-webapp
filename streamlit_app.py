@@ -631,10 +631,10 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes with color
         for idx, (title, _, primary_category, _, _) in enumerate(papers):
-            G.add_node(i, label=primary_category, color=category_color[primary_category], title=title)
-            for j in range(i + 1, len(papers)):
+            G.add_node(idx, label=primary_category, color=category_color[primary_category], title=title)
+            for j in range(idx + 1, len(papers)):
                 # distance = 1 - (0.5 * cosine_sim[i][j] + 0.5 * author_overlap[i][j])
-                G.add_edge(i, j, weight=float(distance_matrix[i][j]))
+                G.add_edge(idx, j, weight=float(distance_matrix[idx][j]))
 
         mst = nx.minimum_spanning_tree(G, weight='weight')
 
