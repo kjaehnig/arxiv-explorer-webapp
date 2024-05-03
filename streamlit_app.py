@@ -731,9 +731,19 @@ st.title('arXiv Paper Explorer')
 subtopic = st.text_input('Enter a subtopic to search:', 'machine learning')
 
 
-if st.button('Fetch Papers'):
+with st.columns(10):
+    fetch_papers_buttons = st.button('Fetch papers')
+    also_summarize = st.checkbox('Summarize with LLM')
+    if also_summarize:
+        st.warning("Summarizing each paper takes a while.")
+
+if fetch_papers_buttons:
     papers = fetch_papers(subtopic, max_results)
 
+    if also_summarize:
+        summary_dict = {}
+        for _, summary, _, _, _, aid in papers:
+            summary_dict[aid] = summarize_abstract(summary)
     if papers:
         st.write(f"Found {len(papers)} papers on '{subtopic}'.")
 
@@ -754,11 +764,11 @@ if st.button('Fetch Papers'):
                     st.write(summary)
                     summary_key = f"summary-{aid}"
 
-                    if st.checkbox("Non-technical Abstract Please.", key=summary_key, value=False):
-                        if summary_key not in st.session_state:
-                            st.session_state[summary_key] = summarize_abstract(summary)
-                        # simplified_summary = summarize_abstract(summary)
-                        st.write(st.session_state[summary_key])
+                    # if st.checkbox("Non-technical Abstract Please.", key=summary_key, value=False):
+                    #     if summary_key not in st.session_state:
+                    #         st.session_state[summary_key] = summarize_abstract(summary)
+                    #     # simplified_summary = summarize_abstract(summary)
+                    #     st.write(st.session_state[summary_key])
         # if show_legend:
         #     display_groups_with_expanders(group_details)
 
