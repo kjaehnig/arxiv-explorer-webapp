@@ -631,7 +631,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     if mst_chkbox:
         # Calculate group identifiers and overlap weights
         # paper_group, overlap_weights = calculate_category_groups_bfs(papers)
-
+        titles = [paper[0] for paper in papers]
         authors = [paper[4] for paper in papers]
         author_overlap = calculate_author_overlap(authors)
         cosine_sim = calculate_cosine_similarity(papers)
