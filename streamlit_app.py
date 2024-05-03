@@ -642,7 +642,9 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             net.add_node(node, label=attr['label'], color=attr['color'], title=attr['title'])
 
         for edge in mst.edges(data=True):
-            net.add_edge(edge[0], edge[1], width=2, title=f"Weight: {edge[2]['weight']:0.2f}")
+            net.add_edge(edge[0], edge[1],
+                         value=2*float(edge[2]['weight']/max(edge[2]['weight'])),
+                         title=f"Weight: {edge[2]['weight']:0.2f}")
 
         # Draw the MST with colors
         # pos = nx.spring_layout(mst)
