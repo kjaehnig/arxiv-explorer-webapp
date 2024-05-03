@@ -245,7 +245,7 @@ with st.sidebar:
     #     st.warning("This is currently slow. May crash with MAQ > 20.")
 
     # Label for the group of checkboxes
-    st.subheader('Network Layout')
+    st.subheader('Choose Network Layout')
 
     # Initialize session state variables if they don't exist
     if 'group_color' not in st.session_state:
@@ -260,8 +260,8 @@ with st.sidebar:
         group_color_chkbox = st.checkbox('Group Color', value=False, key='group_color')
         mst_chkbox = st.checkbox('MST', value=st.session_state['mst'], key='mst')
     else:
-        group_color_chkbox = st.checkbox('Group Color', value=False, key='group_color')
-        mst_chkbox = st.checkbox('MST', value=False, key='mst')
+        group_color_chkbox = st.checkbox('Group Color', value=st.session_state['group_color'], key='group_color')
+        mst_chkbox = st.checkbox('MST', value=st.session_state['mst'], key='mst')
 
     # Display the current state of checkboxes
     st.write('Group Color:', st.session_state['group_color'])
