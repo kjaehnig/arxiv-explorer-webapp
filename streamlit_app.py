@@ -277,7 +277,7 @@ with st.sidebar:
     group_color_chkbox = st.checkbox('Group Color', value=st.session_state.get('group_color', False), key='group_color', on_change=toggle_group_color)
 
     # MST Checkbox
-    mst_chckbox = st.checkbox('MST', value=st.session_state.get('mst', False), key='mst', on_change=toggle_mst)
+    mst_chkbox = st.checkbox('MST', value=st.session_state.get('mst', False), key='mst', on_change=toggle_mst)
 
     # Display the current state of checkboxes
     st.write('Group Color:', st.session_state.get('group_color', False), 'MST:', st.session_state.get('mst', False))
