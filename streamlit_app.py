@@ -747,7 +747,7 @@ subtopic = st.text_input('Enter a subtopic to search:', 'machine learning')
 
 def print_out_papers_and_summaries(papers):
     # Display paper titles and summaries
-    with st.container:
+    with st.container():
         for title, summary, primary_cat, cat, authors in papers:
             with st.expander(title + f" (Found in {arxiv_categories.get(primary_cat, 'Other')}"):
                 # summary_response = summarize_abstract(summary)
