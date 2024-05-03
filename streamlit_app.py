@@ -759,7 +759,7 @@ if st.button('Fetch Papers'):
             HtmlFile = open(network_path, 'r', encoding='utf-8')
             st.components.v1.html(HtmlFile.read(), height=700)
 
-        with st.expander("Paper Titles, Summaries, and Authors"):
+        with st.container("Paper Titles, Summaries, and Authors"):
             for title, summary, primary_cat, cat, authors in papers:
                 with st.expander(title + f" (Found in {arxiv_categories.get(primary_cat, 'Other')}"):
                     # summary_response = summarize_abstract(summary)
