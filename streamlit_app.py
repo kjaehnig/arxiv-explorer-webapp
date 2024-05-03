@@ -636,7 +636,8 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         for i, (title, summary, primary_category, categories, authors) in enumerate(papers):
             group_id = np.argmax(author_overlap[i])  # Assuming highest overlap defines the group
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
-            net.add_node(i, label=group_label, title=f"{title}\n{authors}", group=group_id)
+            color = color_palette[i % len(color_palette)]
+            net.add_node(i, label=group_label, title=f"{title}\n{authors}", group=group_id, color=color)
         # Add edges based on cosine similarity of summaries
         for i in range(len(papers)):
             for j in range(i + 1, len(papers)):
@@ -668,22 +669,23 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             # st.write(categories)
             # st.write(authors)
             # st.write("*"*20)
-            group = papers[i]
-            st.write(group)
+            # group = papers[i]
+            # st.write(group)
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
             # title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
 
-            if group not in group_details:
-                group_details[group] = {
-                    'category': primary_category.split('.')[0],
-                    'papers': [],
-                    'color': color_palette[len(group_details) % len(color_palette)],
-                    'group_label':group_label,
-                    'title': title
-                }
+            # if group not in group_details:
+            #     group_details[group] = {
+            #         'category': primary_category.split('.')[0],
+            #         'papers': [],
+            #         'color': color_palette[len(group_details) % len(color_palette)],
+            #         'group_label':group_label,
+            #         'title': title
+            #     }
+            color = color_palette[i % len(color_palette)]
             group_details[group]['papers'].append(title)
-            net.add_node(node, label=group_label, title=title, group=paper_group[node], node_color=group_details[group]['color'])
+            net.add_node(node, label=group_label, title=title, group=paper_group[node], node_color=color)
 
         for i, j in mst.edges:
             net.add_edge(i, j, value=float(overlap_weights[(i, j)]))
