@@ -580,7 +580,7 @@ def calculate_similarity_with_jaccard(papers):
     return similarity_matrix
 
 
-def build_interactive_network(papers, similarity_matrix, threshold=0.25):
+def build_interactive_network(papers, threshold=0.25):
     """
     Build an interactive network graph based on abstract similarity,
     labeling nodes with unique categories.
@@ -678,6 +678,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
     path = "arxiv_network.html"
     net.save_graph(path)
+    net.show_buttons(filter_=['physics'])
     net.show(path)
     return path, group_details
 
@@ -726,8 +727,8 @@ if st.button('Fetch Papers'):
 
         with st.container():
             # Calculate similarities and build the network graph
-            similarity_matrix = calculate_cosine_similarity(papers)
-            network_path, group_details = build_interactive_network(papers, similarity_matrix, threshold=thresh_value)
+            # similarity_matrix = calculate_cosine_similarity(papers)
+            network_path, group_details = build_interactive_network(papers, threshold=thresh_value)
             HtmlFile = open(network_path, 'r', encoding='utf-8')
             st.components.v1.html(HtmlFile.read(), height=700)
 
