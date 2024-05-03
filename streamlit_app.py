@@ -253,9 +253,9 @@ with st.sidebar:
     # Conditional logic to disable checkboxes based on the state of the other
     if group_color:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
-        mst_chkbox = st.sidebar.checkbox('MST', value=False, key='mst')
+        mst_chkbox = st.sidebar.checkbox('MST', value=~mst, key='mst')
     elif mst:
-        group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
+        group_color_chkbox = st.sidebar.checkbox('Group Color', value=~group_color, key='group_color')
         mst_chkbox = st.checkbox('MST', value=mst, key='mst')
     # if not mst and not group_color:
     #     group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
@@ -634,8 +634,9 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes with color
         for idx, (title, _, primary_category, _, authors) in enumerate(papers):
+            group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             G.add_node(idx,
-                       label=primary_category,
+                       label=group_label,
                        color=category_color[primary_category],
                        title=f"{title}\n{authors}")
             for j in range(idx + 1, len(papers)):
