@@ -632,7 +632,12 @@ def build_interactive_network(papers, threshold=0.25):
             group_label = f"{arxiv_categories.get(primary_category, 'Other')}"
             color = category_color[primary_category]
             # st.write(color)
-            net.add_node(i, label=group_label, title=f"{title}\n{authors}", color=color)
+            net.add_node(i,
+                         label=group_label,
+                         title=f"{title}\n{authors}",
+                         color=color,
+                         value=len(authors)
+                         )
         # Add edges based on cosine similarity of summaries
         for i in range(len(papers)):
             for j in range(i + 1, len(papers)):
@@ -664,7 +669,12 @@ def build_interactive_network(papers, threshold=0.25):
         mst = nx.minimum_spanning_tree(G, weight='weight')
 
         for node, attr in mst.nodes(data=True):
-            net.add_node(node, label=attr['label'], color=attr['color'], title=attr['title'])
+            net.add_node(node,
+                         label=attr['label'],
+                         color=attr['color'],
+                         title=attr['title'],
+                         value=len([name for name in attr['title'].split('[')[1].strip(']').split(',')])
+                         )
 
         for idx, edge in enumerate(mst.edges(data=True)):
             net.add_edge(edge[0], edge[1],
