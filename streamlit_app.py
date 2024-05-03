@@ -205,6 +205,7 @@ if stopwords_not_downloaded:
     nltk.download('stopwords')
 stop_words = set(nltk.corpus.stopwords.words("english"))
 
+
 @st.cache_resource
 def load_pipeline_summarizer():
     # Initialize the BART summarization pipeline
@@ -255,7 +256,7 @@ with st.sidebar:
     st.subheader('Network Layout')
 
     # Check if either checkbox is already selected (preserves state across runs)
-    group_color = st.session_state.get('group_color', False)
+    group_color = st.session_state.get('group_color', True)
     mst = st.session_state.get('mst', False)
 
     # Conditional logic to disable checkboxes based on the state of the other
@@ -269,9 +270,9 @@ with st.sidebar:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
         mst_chkbox = st.sidebar.checkbox('MST', value=mst, key='mst')
 
-    show_legend = st.sidebar.checkbox("Display Graph Legend",
-                                      value=False,
-                                      disabled=True if mst_chkbox else False)
+    # show_legend = st.sidebar.checkbox("Display Graph Legend",
+    #                                   value=False,
+    #                                   disabled=True if mst_chkbox else False)
 
     # Display the current state of checkboxes (for demonstration)
     st.write('Group Color:', group_color)
@@ -566,6 +567,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
     # Set to keep track of already used primary categories
     used_categories = set()
+    group_details = {}
 
     unique_labels = []
     # Add nodes with primary categories, ensuring uniqueness where possible
@@ -586,24 +588,24 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         #     net.add_node(i, label=unique_labels[i], title=title, group=paper_group[i])
 
         # Assign unique colors and create unique labels based on group and category info
-        group_details = {}
         # Initialize group details
         for index, (title, _, primary_category, categories) in enumerate(papers):
             group = paper_group[index]
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
-            important_ner_words = summarize_title_with_ner(title)
+            title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
 
             if group not in group_details:
                 group_details[group] = {
-                    'category': important_ner_words,
+                    'category': primary_category.split('.')[0],
                     'papers': [],
                     'color': color_palette[len(group_details) % len(color_palette)],
-                    'group_label':group_label
+                    'group_label':group_label,
+                    'title': title_important_words
                 }
             group_details[group]['papers'].append(title)
 
-            net.add_node(index, label=important_ner_words, title=title, color=group_details[group]['color'])
+            net.add_node(index, label=primary_category, title=title, color=group_details[group]['color'])
 
         # Add edges based on similarity score
         for i in range(len(papers)):
@@ -623,7 +625,21 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes and edges from MST to pyvis network
         for i, node in enumerate(mst.nodes):
-            title, _, primary_category, _ = papers[node]
+            title, _, primary_category, categories = papers[node]
+            group = paper_group[node]
+            group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
+            # primary_category = categories[0] if categories else "Unknown"
+            title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
+
+            if group not in group_details:
+                group_details[group] = {
+                    'category': primary_category.split('.')[0],
+                    'papers': [],
+                    'color': color_palette[len(group_details) % len(color_palette)],
+                    'group_label':group_label,
+                    'title': title_important_words
+                }
+            group_details[group]['papers'].append(title)
             net.add_node(node, label=unique_labels[i], title=title, group=paper_group[node])
 
         for i, j in mst.edges:
