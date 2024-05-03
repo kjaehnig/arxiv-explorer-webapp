@@ -287,7 +287,9 @@ with st.sidebar:
     # st.write('Group Color:', group_color, ' MST:', mst)
     # st.write('MST:', mst)
 
-    print_out_paper_summaries = st.sidebar.checkbox('Print titles and abstracts?', value=False)
+    print_out_paper_summaries = st.sidebar.checkbox('Print titles and abstracts?',
+                                                    value=False,
+                                                    on_change=print_out_paper_and_summaries)
 
 # def calculate_category_groups_dfs(papers):
 #     from collections import defaultdict
@@ -745,6 +747,14 @@ st.title('arXiv Paper Explorer')
 # User input for subtopic
 subtopic = st.text_input('Enter a subtopic to search:', 'machine learning')
 
+def print_out_papers_and_summaries():
+    # Display paper titles and summaries
+    for title, summary, primary_cat, cat, authors in papers:
+        with st.expander(title + f" (Found in {arxiv_categories.get(primary_category, 'Other')}"):
+            # summary_response = summarize_abstract(summary)
+            st.write((ii for ii in authors))
+            st.write(summary)
+
 if st.button('Fetch Papers'):
     papers = fetch_papers(subtopic, max_results)
     if papers:
@@ -759,11 +769,5 @@ if st.button('Fetch Papers'):
         # if show_legend:
         #     display_groups_with_expanders(group_details)
 
-        if print_out_paper_summaries:
-            # Display paper titles and summaries
-            for title, summary, _, cat in papers:
-                with st.expander(title + f"(found in {cat}"):
-                    # summary_response = summarize_abstract(summary)
-                    st.write(summary)
     else:
         st.write("No papers found.")
