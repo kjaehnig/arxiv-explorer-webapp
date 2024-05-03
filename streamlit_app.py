@@ -630,7 +630,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         G = nx.Graph()
 
         # Add nodes with color
-        for idx, (title, _, primary_category, _, _) in enumerate(papers):
+        for idx, (title, _, primary_category, _, authors) in enumerate(papers):
             G.add_node(idx,
                        label=primary_category,
                        color=category_color[primary_category],
