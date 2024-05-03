@@ -10,6 +10,9 @@ from transformers import pipeline
 import re
 from collections import Counter, defaultdict, deque
 import nltk
+import spacy
+
+
 
 # all arxiv taxonomic categories
 arxiv_categories = {
@@ -218,6 +221,22 @@ def load_sentence_transformer():
 
 model = load_sentence_transformer()
 
+@st.cache_resource
+def load_nlp_model():
+    # Load a pre-trained NLP model
+    nlp = spacy.load("en_core_web_sm")
+    return nlp
+
+nlp = load_nlp_model()
+
+def summarize_title_with_ner(titles):
+    summaries = []
+    for title in titles:
+        doc = nlp(title)
+        # Extract entities and some other potentially important nouns
+        keywords = [token.text for token in doc if token.ent_type_ or token.pos_ in ['NOUN', 'PROPN']]
+        summaries.append(" ".join(keywords[:4]))  # Keep only the first 4
+    return summaries
 
 with st.sidebar:
     st.header("Control Panel")
@@ -573,16 +592,18 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             group = paper_group[index]
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
+            important_ner_words = summarize_title_with_ner(title)
+
             if group not in group_details:
                 group_details[group] = {
-                    'category': primary_category,
+                    'category': important_ner_words,
                     'papers': [],
                     'color': color_palette[len(group_details) % len(color_palette)],
                     'group_label':group_label
                 }
             group_details[group]['papers'].append(title)
 
-            net.add_node(index, label=group_label, title=title, color=group_details[group]['color'])
+            net.add_node(index, label=important_ner_words, title=title, color=group_details[group]['color'])
 
         # Add edges based on similarity score
         for i in range(len(papers)):
@@ -688,8 +709,8 @@ if st.button('Fetch Papers'):
         HtmlFile = open(network_path, 'r', encoding='utf-8')
         st.components.v1.html(HtmlFile.read(), height=700)
 
-        if show_legend:
-            display_groups_with_expanders(group_details)
+        # if show_legend:
+        #     display_groups_with_expanders(group_details)
 
         if print_out_paper_summaries:
             # Display paper titles and summaries
