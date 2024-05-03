@@ -281,6 +281,8 @@ with st.sidebar:
 
     # Display the current state of checkboxes
     st.write('Group Color:', st.session_state.get('group_color', False), 'MST:', st.session_state.get('mst', False))
+
+    summarizer_chkbox = st.checkbox('Summarizer')
     # st.write('MST:', st.session_state.get('mst', False))
     # Display the current state of checkboxes (for demonstration)
 
@@ -489,13 +491,14 @@ def fetch_papers(subtopic, max_results=5):
     for entry in root.findall('atom:entry', ns):
         title = entry.find('atom:title', ns).text.strip()
         summary = entry.find('atom:summary', ns).text.strip()
+        arxiv_id = entry.find('atom:id', ns).text.strip().split('/')[-1]  # Extracting ID from the URL
         all_categories = [category.get('term') for category in entry.findall('atom:category', ns)]
         primary_category = next((category.get('term') for category in entry.findall('atom:category', ns)
                                  if category.get('primary') == 'true'), all_categories[0] if all_categories else 'Uncategorized')
         authors = [author.find('atom:name', ns).text.strip() for author in entry.findall('atom:author', ns)]
 
 
-        papers.append((title, summary, primary_category, all_categories, authors))
+        papers.append((title, summary, primary_category, all_categories, authors, arxiv_id))
 
     return papers
 
@@ -529,7 +532,7 @@ def preprocess_text(text):
 
 def calculate_cosine_similarity(papers):
     """Calculate similarity between paper abstracts using embeddings."""
-    abstracts = [preprocess_text(summary) for _, summary, _, _, _ in papers]
+    abstracts = [preprocess_text(summary) for _, summary, _, _, _,_ in papers]
     embeddings = model.encode(abstracts)
     similarity_matrix = cosine_similarity(embeddings)
     return similarity_matrix
@@ -601,7 +604,6 @@ def build_interactive_network(papers, threshold=0.25):
     # Set to keep track of already used primary categories
     used_categories = set()
     group_details = {}
-    titles = [paper[0] for paper in papers]
     authors = [paper[4] for paper in papers]
     author_overlap = calculate_author_overlap(authors)
     cosine_sim = calculate_cosine_similarity(papers)
@@ -627,14 +629,14 @@ def build_interactive_network(papers, threshold=0.25):
 
     if group_color_chkbox:
 
-        for i, (title, summary, primary_category, categories, authors) in enumerate(papers):
-            group_id = int(np.argmax(author_overlap[i]))  # Assuming highest overlap defines the group
+        for i, (title, summary, primary_category, categories, authors, aid) in enumerate(papers):
+            # group_id = int(np.argmax(author_overlap[i]))  # Assuming highest overlap defines the group
             group_label = f"{arxiv_categories.get(primary_category, 'Other')}"
             color = category_color[primary_category]
             # st.write(color)
             net.add_node(i,
-                         label=group_label,
-                         title=f"{title}\n{authors}",
+                         label=aid,
+                         title=f"{title}\n{group_label}",
                          color=color,
                          value=len(authors)
                          )
@@ -656,12 +658,12 @@ def build_interactive_network(papers, threshold=0.25):
         G = nx.Graph()
 
         # Add nodes with color
-        for idx, (title, _, primary_category, _, authors) in enumerate(papers):
+        for idx, (title, _, primary_category, _, authors, aid) in enumerate(papers):
             group_label = f"{arxiv_categories.get(primary_category, 'Other')}"
             G.add_node(idx,
-                       label=group_label,
+                       label=aid,
                        color=category_color[primary_category],
-                       title=f"{title}\n{authors}")
+                       title=f"{title}\n{group_label}")
             for j in range(idx + 1, len(papers)):
                 # distance = 1 - (0.5 * cosine_sim[i][j] + 0.5 * author_overlap[i][j])
                 G.add_edge(idx, j, weight=float(distance_matrix[idx][j]))
