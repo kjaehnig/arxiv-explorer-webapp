@@ -628,7 +628,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes with color
         for idx, (title, _, primary_category, _, _) in enumerate(papers):
-            G.add_node(idx, label=title, color=category_color[primary_category])
+            G.add_node(idx, label=title, color=color_palette[idx])
 
         # mst = nx.minimum_spanning_tree(G, weight='weight')  # Calculate MST
         # st.write(mst.nodes)
