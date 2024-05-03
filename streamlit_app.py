@@ -252,30 +252,24 @@ with st.sidebar:
         st.session_state['group_color'] = True
     if 'mst' not in st.session_state:
         st.session_state['mst'] = False
-    # Checkbox for Group Color
-    if st.checkbox('Group Color', value=st.session_state['group_color'], key='group_color'):
-        st.session_state['group_color'] = True
-        st.session_state['mst'] = False  # Uncheck MST when Group Color is checked
-    else:
-        st.session_state['group_color'] = False
 
-    # Checkbox for MST
-    if st.checkbox('MST', value=st.session_state['mst'], key='mst'):
-        st.session_state['mst'] = True
-        st.session_state['group_color'] = False  # Uncheck Group Color when MST is checked
+    if st.session_state['group_color']:
+        group_color_chkbox = st.checkbox('Group Color', value=st.session_state['group_color'], key='group_color')
+        mst_chkbox = st.checkbox('MST', value=False, key='mst')
+    elif st.session_state['mst']:
+        group_color_chkbox = st.checkbox('Group Color', value=False, key='group_color')
+        mst_chkbox = st.checkbox('MST', value=st.session_state['mst'], key='mst')
     else:
-        st.session_state['mst'] = False
+        group_color_chkbox = st.checkbox('Group Color', value=False, key='group_color')
+        mst_chkbox = st.checkbox('MST', value=False, key='mst')
 
     # Display the current state of checkboxes
     st.write('Group Color:', st.session_state['group_color'])
     st.write('MST:', st.session_state['mst'])
-    # show_legend = st.sidebar.checkbox("Display Graph Legend",
-    #                                   value=False,
-    #                                   disabled=True if mst_chkbox else False)
 
     # Display the current state of checkboxes (for demonstration)
-    st.write('Group Color:', group_color)
-    st.write('MST:', mst)
+    # st.write('Group Color:', group_color)
+    # st.write('MST:', mst)
 
 
 # def calculate_category_groups_dfs(papers):
