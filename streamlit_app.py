@@ -688,7 +688,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             net.add_node(node, label=group_label, title=title, group=i, node_color=color)
 
         for i, j in mst.edges:
-            net.add_edge(i, j, value=float(overlap_weights[(i, j)]))
+            net.add_edge(i, j, value=float(author_overlap[(i, j)]))
 
     path = "arxiv_network.html"
     net.save_graph(path)
