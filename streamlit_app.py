@@ -620,7 +620,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             for j in range(i + 1, len(papers)):
                 if cosine_sim[i][j] > threshold:
                     weight = cosine_sim[i][j]
-                    net.add_edge(i, j, value=float(weight))
+                    net.add_edge(i, j, value=float(np.exp(weight/np.max(cosine_sim))/10), title=f"Weight: {weight:0.2f}")
 
     if mst_chkbox:
         # Calculate group identifiers and overlap weights
@@ -631,7 +631,10 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes with color
         for idx, (title, _, primary_category, _, _) in enumerate(papers):
-            G.add_node(idx, label=primary_category, color=category_color[primary_category], title=title)
+            G.add_node(idx,
+                       label=primary_category,
+                       color=category_color[primary_category],
+                       title=f"{title}\n{authors}")
             for j in range(idx + 1, len(papers)):
                 # distance = 1 - (0.5 * cosine_sim[i][j] + 0.5 * author_overlap[i][j])
                 G.add_edge(idx, j, weight=float(distance_matrix[idx][j]))
@@ -643,7 +646,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         for idx, edge in enumerate(mst.edges(data=True)):
             net.add_edge(edge[0], edge[1],
-                         value=float(10**(edge[2]['weight'])/np.max(edge[2]['weight'])),
+                         value=float(np.exp(edge[2]['weight']/np.max(edge[2]['weight']))/10),
                          title=f"Weight: {edge[2]['weight']:0.2f}")
 
         # Draw the MST with colors
