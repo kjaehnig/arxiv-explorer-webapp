@@ -586,7 +586,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
     unique_labels = []
     # Add nodes with primary categories, ensuring uniqueness where possible
-    for i, (title, _, primary_category, _) in enumerate(papers):
+    for i, (title, _, primary_category, _, _) in enumerate(papers):
         if primary_category in used_categories:
             label = f"{primary_category} ({i})"
             unique_labels.append(label)
@@ -604,7 +604,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Assign unique colors and create unique labels based on group and category info
         # Initialize group details
-        for index, (title, _, primary_category, categories) in enumerate(papers):
+        for index, (title, _, primary_category, categories, _) in enumerate(papers):
             group = paper_group[index]
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
@@ -649,7 +649,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes and edges from MST to pyvis network
         for i, node in enumerate(mst.nodes):
-            title, _, primary_category, categories = papers[node]
+            title, _, primary_category, categories, _ = papers[node]
             group = paper_group[node]
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
