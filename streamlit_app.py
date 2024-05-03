@@ -762,8 +762,9 @@ if fetch_papers_buttons:
                     st.write(f"arXiv ID: {aid}")
                     st.write((ii for ii in authors))
                     st.write(summary)
-                    summary_key = f"summary-{aid}"
-
+                    if also_summarize:
+                        st.write("Non-technical Summary")
+                        st.write(summary_dict[aid])
                     # if st.checkbox("Non-technical Abstract Please.", key=summary_key, value=False):
                     #     if summary_key not in st.session_state:
                     #         st.session_state[summary_key] = summarize_abstract(summary)
