@@ -287,9 +287,7 @@ with st.sidebar:
     # st.write('Group Color:', group_color, ' MST:', mst)
     # st.write('MST:', mst)
 
-    paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
-                                                    value=False,
-                                                    on_change=print_out_papers_and_summaries)
+
 
 # def calculate_category_groups_dfs(papers):
 #     from collections import defaultdict
@@ -755,6 +753,10 @@ def print_out_papers_and_summaries():
             st.write((ii for ii in authors))
             st.write(summary)
 
+
+paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
+                                                value=False,
+                                                on_change=print_out_papers_and_summaries)
 if st.button('Fetch Papers'):
     papers = fetch_papers(subtopic, max_results)
     if papers:
