@@ -257,9 +257,9 @@ with st.sidebar:
     if mst:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
         mst_chkbox = st.checkbox('MST', value=mst, key='mst')
-    if not mst and not group_color:
-        group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
-        mst_chkbox = st.sidebar.checkbox('MST', value=False, key='mst')
+    # if not mst and not group_color:
+    #     group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
+    #     mst_chkbox = st.sidebar.checkbox('MST', value=False, key='mst')
 
     # show_legend = st.sidebar.checkbox("Display Graph Legend",
     #                                   value=False,
@@ -620,7 +620,10 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             for j in range(i + 1, len(papers)):
                 if cosine_sim[i][j] > threshold:
                     weight = cosine_sim[i][j]
-                    net.add_edge(i, j, value=float(10**(weight/np.max(cosine_sim))), title=f"Weight: {weight:0.2f}")
+                    net.add_edge(i, j,
+                                 value=float(10**(weight/np.max(cosine_sim))),
+                                 title=f"Weight: {weight:0.2f}",
+                                 )
 
     if mst_chkbox:
         # Calculate group identifiers and overlap weights
