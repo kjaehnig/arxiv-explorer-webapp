@@ -248,9 +248,9 @@ with st.sidebar:
 
     thresh_value = st.slider('Similarity Threshold', min_value=0.01, max_value=0.99, value=0.25)
 
-    print_out_paper_summaries = st.sidebar.checkbox('Get summaries with Sentence-Transformer?', value=False)
-    if print_out_paper_summaries:
-        st.warning("This is currently slow. May crash with MAQ > 20.")
+    print_out_paper_summaries = st.sidebar.checkbox('Print titles and abstracts?', value=False)
+    # if print_out_paper_summaries:
+    #     st.warning("This is currently slow. May crash with MAQ > 20.")
 
     # Label for the group of checkboxes
     st.subheader('Network Layout')
@@ -732,7 +732,7 @@ if st.button('Fetch Papers'):
             # Display paper titles and summaries
             for title, summary, _, cat in papers:
                 with st.expander(title + f"(found in {cat}"):
-                    summary_response = summarize_abstract(summary)
-                    st.write(summary_response)
+                    # summary_response = summarize_abstract(summary)
+                    st.write(summary)
     else:
         st.write("No papers found.")
