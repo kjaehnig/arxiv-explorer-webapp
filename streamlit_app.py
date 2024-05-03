@@ -643,7 +643,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         for edge in mst.edges(data=True):
             net.add_edge(edge[0], edge[1],
-                         width=10*float(edge[2]['weight']/np.max(edge[2]['weight'])),
+                         width=10**float(edge[2]['weight']/np.max(edge[2]['weight'])),
                          title=f"Weight: {edge[2]['weight']:0.2f}")
 
         # Draw the MST with colors
