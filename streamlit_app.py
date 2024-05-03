@@ -280,10 +280,11 @@ with st.sidebar:
     st.checkbox('MST', value=st.session_state.get('mst', False), key='mst', on_change=toggle_mst)
 
     # Display the current state of checkboxes
-    st.write('Group Color:', st.session_state.get('group_color', False))
+    st.write('Group Color:', st.session_state.get('group_color', False), 'MST:', st.session_state.get('mst', False))
     st.write('MST:', st.session_state.get('mst', False))
     # Display the current state of checkboxes (for demonstration)
-    st.write('Group Color:', group_color, ' MST:', mst)
+
+    # st.write('Group Color:', group_color, ' MST:', mst)
     # st.write('MST:', mst)
 
     print_out_paper_summaries = st.sidebar.checkbox('Print titles and abstracts?', value=False)
