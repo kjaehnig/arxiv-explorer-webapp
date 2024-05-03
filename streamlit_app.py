@@ -240,9 +240,6 @@ with st.sidebar:
 
     thresh_value = st.slider('Similarity Threshold', min_value=0.01, max_value=0.99, value=0.25)
 
-    print_out_paper_summaries = st.sidebar.checkbox('Print titles and abstracts?', value=False)
-    # if print_out_paper_summaries:
-    #     st.warning("This is currently slow. May crash with MAQ > 20.")
 
     # Label for the group of checkboxes
     st.subheader('Choose Network Layout')
@@ -253,19 +250,23 @@ with st.sidebar:
     if 'mst' not in st.session_state:
         st.session_state['mst'] = False
 
-    if st.session_state['group_color']:
+    if group_color_chkbox:
         group_color_chkbox = st.checkbox('Group Color', value=st.session_state['group_color'], key='group_color')
         mst_chkbox = st.checkbox('MST', value=False, key='mst')
-    elif st.session_state['mst']:
+    elif mst_chkbox:
         group_color_chkbox = st.checkbox('Group Color', value=False, key='group_color')
         mst_chkbox = st.checkbox('MST', value=st.session_state['mst'], key='mst')
     else:
-        group_color_chkbox = st.checkbox('Group Color', value=st.session_state['group_color'], key='group_color')
-        mst_chkbox = st.checkbox('MST', value=st.session_state['mst'], key='mst')
+        group_color_chkbox = st.checkbox('Group Color', value=False, key='group_color')
+        mst_chkbox = st.checkbox('MST', value=False, key='mst')
 
     # Display the current state of checkboxes
-    st.write('Group Color:', st.session_state['group_color'])
-    st.write('MST:', st.session_state['mst'])
+    st.write('Group Color:', st.session_state['group_color'], ' MST:', st.session_state['mst'])
+    # st.write('MST:', st.session_state['mst'])
+
+    print_out_paper_summaries = st.sidebar.checkbox('Print titles and abstracts?', value=False)
+    # if print_out_paper_summaries:
+    #     st.warning("This is currently slow. May crash with MAQ > 20.")
 
     # Display the current state of checkboxes (for demonstration)
     # st.write('Group Color:', group_color)
