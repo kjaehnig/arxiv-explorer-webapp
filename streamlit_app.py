@@ -258,9 +258,9 @@ with st.sidebar:
     elif mst:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=False if True else False, key='group_color')
         mst_chkbox = st.checkbox('MST', value=mst, key='mst')
-    # else:
-    #     group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
-    #     mst_chkbox = st.sidebar.checkbox('MST', value=mst, key='mst')
+    else:
+        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
+        mst_chkbox = st.sidebar.checkbox('MST', value=mst, key='mst')
 
     # show_legend = st.sidebar.checkbox("Display Graph Legend",
     #                                   value=False,
