@@ -247,21 +247,28 @@ with st.sidebar:
     # Label for the group of checkboxes
     st.subheader('Network Layout')
 
-    # Check if either checkbox is already selected (preserves state across runs)
-    group_color = st.session_state.get('group_color', True)
-    mst = st.session_state.get('mst', False)
-
-    # Conditional logic to disable checkboxes based on the state of the other
-    if group_color:
-        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
-        mst_chkbox = st.sidebar.checkbox('MST', value=False if True else False, key='mst')
-    elif mst:
-        group_color_chkbox = st.sidebar.checkbox('Group Color', value=False if True else False, key='group_color')
-        mst_chkbox = st.checkbox('MST', value=mst, key='mst')
+    # Initialize session state variables if they don't exist
+    if 'group_color' not in st.session_state:
+        st.session_state['group_color'] = True
+    if 'mst' not in st.session_state:
+        st.session_state['mst'] = False
+    # Checkbox for Group Color
+    if st.checkbox('Group Color', value=st.session_state['group_color'], key='group_color'):
+        st.session_state['group_color'] = True
+        st.session_state['mst'] = False  # Uncheck MST when Group Color is checked
     else:
-        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
-        mst_chkbox = st.sidebar.checkbox('MST', value=mst, key='mst')
+        st.session_state['group_color'] = False
 
+    # Checkbox for MST
+    if st.checkbox('MST', value=st.session_state['mst'], key='mst'):
+        st.session_state['mst'] = True
+        st.session_state['group_color'] = False  # Uncheck Group Color when MST is checked
+    else:
+        st.session_state['mst'] = False
+
+    # Display the current state of checkboxes
+    st.write('Group Color:', st.session_state['group_color'])
+    st.write('MST:', st.session_state['mst'])
     # show_legend = st.sidebar.checkbox("Display Graph Legend",
     #                                   value=False,
     #                                   disabled=True if mst_chkbox else False)
