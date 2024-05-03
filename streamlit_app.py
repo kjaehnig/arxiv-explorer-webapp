@@ -583,7 +583,12 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     # Set to keep track of already used primary categories
     used_categories = set()
     group_details = {}
+    titles = [paper[0] for paper in papers]
+    authors = [paper[4] for paper in papers]
+    author_overlap = calculate_author_overlap(authors)
+    cosine_sim = calculate_cosine_similarity(papers)
 
+    distance_matrix = 1 - (0.5 * cosine_sim + 0.5 * author_overlap)
     unique_labels = []
     # # Add nodes with primary categories, ensuring uniqueness where possible
     # for i, (title, _, primary_category, _, _) in enumerate(papers):
@@ -597,46 +602,52 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
     if group_color_chkbox:
         # Calculate group identifiers based on category overlap
-        paper_group = calculate_category_groups_dfs(papers)
-
-        # for i, (title, _, primary_category, _) in enumerate(papers):
-        #     net.add_node(i, label=unique_labels[i], title=title, group=paper_group[i])
-
-        # Assign unique colors and create unique labels based on group and category info
-        # Initialize group details
-        for index, (title, _, primary_category, categories, _) in enumerate(papers):
-            group = paper_group[index]
+        # paper_group = calculate_category_groups_dfs(papers)
+        #
+        # # for i, (title, _, primary_category, _) in enumerate(papers):
+        # #     net.add_node(i, label=unique_labels[i], title=title, group=paper_group[i])
+        #
+        # # Assign unique colors and create unique labels based on group and category info
+        # # Initialize group details
+        # for index, (title, _, primary_category, categories, _) in enumerate(papers):
+        #     group = paper_group[index]
+        #     group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
+        #     # primary_category = categories[0] if categories else "Unknown"
+        #     title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
+        #
+        #     if group not in group_details:
+        #         group_details[group] = {
+        #             'category': primary_category.split('.')[0],
+        #             'papers': [],
+        #             'color': color_palette[len(group_details) % len(color_palette)],
+        #             'group_label':group_label,
+        #             'title': title_important_words
+        #         }
+        #     group_details[group]['papers'].append(title)
+        #
+        #     net.add_node(index, label=primary_category, title=title, color=group_details[group]['color'])
+        #
+        # # Add edges based on similarity score
+        # for i in range(len(papers)):
+        #     for j in range(i + 1, len(papers)):
+        #         if similarity_matrix[i][j] > threshold:
+        #             net.add_edge(i, j, value=float(similarity_matrix[i][j]))
+        # Add nodes with their respective group based on author similarity
+        for i, (title, summary, primary_category, categories, authors) in enumerate(papers):
+            group_id = np.argmax(author_overlap[i])  # Assuming highest overlap defines the group
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
-            # primary_category = categories[0] if categories else "Unknown"
-            title_important_words = ' '.join([wr for wr in title.split() if wr not in stop_words])
-
-            if group not in group_details:
-                group_details[group] = {
-                    'category': primary_category.split('.')[0],
-                    'papers': [],
-                    'color': color_palette[len(group_details) % len(color_palette)],
-                    'group_label':group_label,
-                    'title': title_important_words
-                }
-            group_details[group]['papers'].append(title)
-
-            net.add_node(index, label=primary_category, title=title, color=group_details[group]['color'])
-
-        # Add edges based on similarity score
+            net.add_node(i, label=group_label, title=f"{title}\n{authors}", group=group_id)
+        # Add edges based on cosine similarity of summaries
         for i in range(len(papers)):
             for j in range(i + 1, len(papers)):
-                if similarity_matrix[i][j] > threshold:
-                    net.add_edge(i, j, value=float(similarity_matrix[i][j]))
+                if cosine_sim[i][j] > threshold:
+                    weight = cosine_sim[i][j]
+                    net.add_edge(i, j, value=float(weight))
 
     if mst_chkbox:
         # Calculate group identifiers and overlap weights
         # paper_group, overlap_weights = calculate_category_groups_bfs(papers)
-        titles = [paper[0] for paper in papers]
-        authors = [paper[4] for paper in papers]
-        author_overlap = calculate_author_overlap(authors)
-        cosine_sim = calculate_cosine_similarity(papers)
 
-        distance_matrix = 1 - (0.5*cosine_sim + 0.5*author_overlap)
         # Build a graph to calculate MST
         G = nx.Graph()
         # for (i, j), weight in overlap_weights.items():
