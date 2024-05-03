@@ -228,16 +228,7 @@ def load_nlp_model():
     nlp = spacy.load("en_core_web_sm")
     return nlp
 
-nlp = load_nlp_model()
-
-def summarize_title_with_ner(titles):
-    summaries = []
-    for title in titles:
-        doc = nlp(title)
-        # Extract entities and some other potentially important nouns
-        keywords = [token.text for token in doc if token.ent_type_ or token.pos_ in ['NOUN', 'PROPN']]
-        summaries.append(" ".join(keywords[:4]))  # Keep only the first 4
-    return summaries
+# nlp = load_nlp_model()
 
 with st.sidebar:
     st.header("Control Panel")
@@ -420,6 +411,7 @@ def calculate_category_groups_dfs(papers):
 
     return paper_group
 
+
 def calculate_category_groups_bfs(papers):
     # Map each paper to a set of its categories
     paper_categories = [set(categories) for _, _, _, categories in papers]
@@ -481,8 +473,10 @@ def fetch_papers(subtopic, max_results=5):
         all_categories = [category.get('term') for category in entry.findall('atom:category', ns)]
         primary_category = next((category.get('term') for category in entry.findall('atom:category', ns)
                                  if category.get('primary') == 'true'), all_categories[0] if all_categories else 'Uncategorized')
+        authors = [author.find('atom:name', ns).text.strip() for author in entry.findall('atom:author', ns)]
 
-        papers.append((title, summary, primary_category, all_categories))
+
+        papers.append((title, summary, primary_category, all_categories, authors))
 
     return papers
 
@@ -508,12 +502,32 @@ def summarize_abstract(abstract):
     return summary_text[0]['summary_text']
 
 
+def preprocess_text(text):
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    stop_words = set(stopwords.words('english'))
+    return ' '.join([word for word in text.lower().split() if word not in stop_words])
+
+
 def calculate_cosine_similarity(papers):
     """Calculate similarity between paper abstracts using embeddings."""
-    abstracts = [summary for _, summary, _, _ in papers]
+    abstracts = [preprocess_text(summary) for _, summary, _, _, _ in papers]
     embeddings = model.encode(abstracts)
     similarity_matrix = cosine_similarity(embeddings)
     return similarity_matrix
+
+
+def calculate_author_overlap(authors_list):
+    num_papers = len(authors_list)
+    overlap_matrix = np.zeros((num_papers, num_papers))
+    for i in range(num_papers):
+        for j in range(i + 1, num_papers):
+            set_i = set(authors_list[i])
+            set_j = set(authors_list[j])
+            intersection = len(set_i.intersection(set_j))
+            union = len(set_i.union(set_j))
+            overlap = intersection / union if union != 0 else 0
+            overlap_matrix[i][j] = overlap_matrix[j][i] = overlap
+    return overlap_matrix
 
 
 def jaccard_similarity(set1, set2):
@@ -525,7 +539,7 @@ def jaccard_similarity(set1, set2):
     return len(intersection) / len(union)
 
 
-def calculate_similarity(papers):
+def calculate_similarity_with_jaccard(papers):
     """Calculate similarity between paper abstracts using Jaccard similarity."""
     # Convert abstracts to sets of words excluding stopwords
     abstract_sets = []
@@ -612,14 +626,23 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             for j in range(i + 1, len(papers)):
                 if similarity_matrix[i][j] > threshold:
                     net.add_edge(i, j, value=float(similarity_matrix[i][j]))
+
     if mst_chkbox:
         # Calculate group identifiers and overlap weights
-        paper_group, overlap_weights = calculate_category_groups_bfs(papers)
+        # paper_group, overlap_weights = calculate_category_groups_bfs(papers)
 
+        authors = [paper[4] for paper in papers]
+        author_overlap = calculate_author_overlap(authors)
+        cosine_sim = compute_cosine_similarity(papers)
+
+        distance_matrix = 1 - (0.5*cosine_sim + 0.5*author_overlap)
         # Build a graph to calculate MST
         G = nx.Graph()
-        for (i, j), weight in overlap_weights.items():
-            G.add_edge(i, j, weight=-weight)  # Negative weight for maximum overlap (MST inverts to minimum)
+        # for (i, j), weight in overlap_weights.items():
+        #     G.add_edge(i, j, weight=-weight)  # Negative weight for maximum overlap (MST inverts to minimum)
+        for i in range(len(distance_matrix)):
+            for j in range(i + 1, len(distance_matrix)):
+                G.add_edge(titles[i], titles[j], weight=distance_matrix[i][j])
 
         mst = nx.minimum_spanning_tree(G, weight='weight')  # Calculate MST
 
@@ -651,32 +674,32 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     return path, group_details
 
 
-# Function to display the legend with interactive buttons
-def display_interactive_legend(group_details):
-    cols_per_row = 3  # Define the number of columns in the grid
-
-    # Iterate over the groups and create buttons with corresponding expanders
-    for idx, (group_label, details) in enumerate(group_details.items()):
-        if idx % cols_per_row == 0:
-            cols = st.columns(cols_per_row)  # Create a new row of columns
-
-        # Get the correct column for the current item
-        col = cols[idx % cols_per_row]
-
-        # Define a unique key for each button based on its index
-        button_key = f"button_{idx}"
-        # Button CSS to set the background color and style
-        button_style = f"background-color: {details['color']}; color: white; border: none; border-radius: 5px; width: 100%;"
-        button_html = f"<style>.{button_key} {{ {button_style} }}</style>"
-
-        with col:
-            st.markdown(button_html, unsafe_allow_html=True)
-            # Render the button and check if it has been pressed
-            if st.button(f"Group-{idx}", key=button_key, help=f"Show papers for {group_label}"):
-                # Display an expander with the list of papers in this group
-                with st.expander(f"Papers in Group-{idx}"):
-                    for paper in details['papers']:
-                        st.write(paper)
+# # Function to display the legend with interactive buttons
+# def display_interactive_legend(group_details):
+#     cols_per_row = 3  # Define the number of columns in the grid
+#
+#     # Iterate over the groups and create buttons with corresponding expanders
+#     for idx, (group_label, details) in enumerate(group_details.items()):
+#         if idx % cols_per_row == 0:
+#             cols = st.columns(cols_per_row)  # Create a new row of columns
+#
+#         # Get the correct column for the current item
+#         col = cols[idx % cols_per_row]
+#
+#         # Define a unique key for each button based on its index
+#         button_key = f"button_{idx}"
+#         # Button CSS to set the background color and style
+#         button_style = f"background-color: {details['color']}; color: white; border: none; border-radius: 5px; width: 100%;"
+#         button_html = f"<style>.{button_key} {{ {button_style} }}</style>"
+#
+#         with col:
+#             st.markdown(button_html, unsafe_allow_html=True)
+#             # Render the button and check if it has been pressed
+#             if st.button(f"Group-{idx}", key=button_key, help=f"Show papers for {group_label}"):
+#                 # Display an expander with the list of papers in this group
+#                 with st.expander(f"Papers in Group-{idx}"):
+#                     for paper in details['papers']:
+#                         st.write(paper)
 
 def display_groups_with_expanders(group_details):
     for group_label, details in group_details.items():
