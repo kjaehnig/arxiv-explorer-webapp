@@ -768,7 +768,7 @@ if st.button('Fetch Papers'):
             HtmlFile = open(network_path, 'r', encoding='utf-8')
             st.components.v1.html(HtmlFile.read(), height=700)
 
-        paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
+            paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
                                                value=False,
                                                on_change=print_out_papers_and_summaries,
                                                args=(papers,))
