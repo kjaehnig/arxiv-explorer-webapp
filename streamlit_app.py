@@ -601,7 +601,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     #         unique_labels.append(label)
     # Map categories to colors
     category_color = {i:
-                          color_palette[i % len(color_palette)] for i, cat in enumerate(set(paper[2] for paper in papers))
+                          color_palette[i % len(color_palette)] for i, cat in enumerate(papers[2]))
                       }
 
     if group_color_chkbox:
