@@ -646,12 +646,17 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
                 G.add_edge(titles[i], titles[j], weight=distance_matrix[i][j])
 
         mst = nx.minimum_spanning_tree(G, weight='weight')  # Calculate MST
-        st.write(mst.nodes)
+        # st.write(mst.nodes)
         # Add nodes and edges from MST to pyvis network
         for i, node in enumerate(mst.nodes):
             # st.write(node)
-            title, _, primary_category, categories, _ = papers[i]
-            st.write(papers[i])
+            title, summary, primary_category, categories, authors = papers[i]
+            st.write(title)
+            st.write(summary)
+            st.write(primary_category)
+            st.write(categories)
+            st.write(authors)
+            st.write("*"*20)
             # group = paper_group[node]
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
             # primary_category = categories[0] if categories else "Unknown"
