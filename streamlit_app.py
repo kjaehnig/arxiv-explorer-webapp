@@ -230,6 +230,15 @@ def load_nlp_model():
     return nlp
 
 # nlp = load_nlp_model()
+def toggle_group_color():
+    """Toggle MST off when Group Color is checked."""
+    if st.session_state.group_color:
+        st.session_state.mst = False
+
+def toggle_mst():
+    """Toggle Group Color off when MST is checked."""
+    if st.session_state.mst:
+        st.session_state.group_color = False
 
 with st.sidebar:
     st.header("Control Panel")
@@ -246,17 +255,17 @@ with st.sidebar:
     # Label for the group of checkboxes
     st.subheader('Network Layout')
 
-    # Check if either checkbox is already selected (preserves state across runs)
-    group_color = st.session_state.get('group_color', True)
-    mst = st.session_state.get('mst', False)
-
-    # Conditional logic to disable checkboxes based on the state of the other
-    if group_color:
-        group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
-        mst_chkbox = st.sidebar.checkbox('MST', value=~mst, key='mst')
-    elif mst:
-        group_color_chkbox = st.sidebar.checkbox('Group Color', value=~group_color, key='group_color')
-        mst_chkbox = st.checkbox('MST', value=mst, key='mst')
+    # # Check if either checkbox is already selected (preserves state across runs)
+    # group_color = st.session_state.get('group_color', True)
+    # mst = st.session_state.get('mst', False)
+    #
+    # # Conditional logic to disable checkboxes based on the state of the other
+    # if group_color:
+    #     group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
+    #     mst_chkbox = st.sidebar.checkbox('MST', value=~mst, key='mst')
+    # elif mst:
+    #     group_color_chkbox = st.sidebar.checkbox('Group Color', value=~group_color, key='group_color')
+    #     mst_chkbox = st.checkbox('MST', value=mst, key='mst')
     # if not mst and not group_color:
     #     group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
     #     mst_chkbox = st.sidebar.checkbox('MST', value=False, key='mst')
@@ -264,7 +273,15 @@ with st.sidebar:
     # show_legend = st.sidebar.checkbox("Display Graph Legend",
     #                                   value=False,
     #                                   disabled=True if mst_chkbox else False)
+    # Group Color Checkbox
+    st.checkbox('Group Color', value=st.session_state.get('group_color', False), key='group_color', on_change=toggle_group_color)
 
+    # MST Checkbox
+    st.checkbox('MST', value=st.session_state.get('mst', False), key='mst', on_change=toggle_mst)
+
+    # Display the current state of checkboxes
+    st.write('Group Color:', st.session_state.get('group_color', False))
+    st.write('MST:', st.session_state.get('mst', False))
     # Display the current state of checkboxes (for demonstration)
     st.write('Group Color:', group_color, ' MST:', mst)
     # st.write('MST:', mst)
