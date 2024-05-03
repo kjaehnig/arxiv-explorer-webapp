@@ -247,17 +247,17 @@ with st.sidebar:
     st.subheader('Network Layout')
 
     # Check if either checkbox is already selected (preserves state across runs)
-    group_color = st.session_state.get('group_color', False)
+    group_color = st.session_state.get('group_color', True)
     mst = st.session_state.get('mst', False)
 
     # Conditional logic to disable checkboxes based on the state of the other
     if group_color:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=group_color, key='group_color')
         mst_chkbox = st.sidebar.checkbox('MST', value=False, key='mst')
-    elif mst:
+    if mst:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
         mst_chkbox = st.checkbox('MST', value=mst, key='mst')
-    else:
+    if not mst and not group_color:
         group_color_chkbox = st.sidebar.checkbox('Group Color', value=False, key='group_color')
         mst_chkbox = st.sidebar.checkbox('MST', value=False, key='mst')
 
