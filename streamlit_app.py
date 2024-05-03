@@ -620,7 +620,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
             for j in range(i + 1, len(papers)):
                 if cosine_sim[i][j] > threshold:
                     weight = cosine_sim[i][j]
-                    net.add_edge(i, j, value=float(np.exp(weight/np.max(cosine_sim))/10), title=f"Weight: {weight:0.2f}")
+                    net.add_edge(i, j, value=float(np.exp(weight/np.max(cosine_sim))/100), title=f"Weight: {weight:0.2f}")
 
     if mst_chkbox:
         # Calculate group identifiers and overlap weights
@@ -630,7 +630,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         G = nx.Graph()
 
         # Add nodes with color
-        for idx, (title, _, primary_category, _, _) in enumerate(papers):
+        for idx, (title, _, primary_category, _, authors) in enumerate(papers):
             G.add_node(idx,
                        label=primary_category,
                        color=category_color[primary_category],
@@ -646,7 +646,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         for idx, edge in enumerate(mst.edges(data=True)):
             net.add_edge(edge[0], edge[1],
-                         value=float(np.exp(edge[2]['weight']/np.max(edge[2]['weight']))/10),
+                         value=float(np.exp(edge[2]['weight']/np.max(edge[2]['weight']))/100),
                          title=f"Weight: {edge[2]['weight']:0.2f}")
 
         # Draw the MST with colors
