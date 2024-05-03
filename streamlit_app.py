@@ -600,7 +600,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
     #         label = primary_category
     #         unique_labels.append(label)
     # Map categories to colors
-    category_color = {cat:
+    category_color = {i:
                           color_palette[i % len(color_palette)] for i, cat in enumerate(set(paper[2] for paper in papers))
                       }
 
@@ -609,8 +609,8 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         for i, (title, summary, primary_category, categories, authors) in enumerate(papers):
             group_id = int(np.argmax(author_overlap[i]))  # Assuming highest overlap defines the group
             group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
-            color = category_color[primary_category]
-            st.write(color)
+            color = category_color[i]
+            # st.write(color)
             net.add_node(i, label=group_label, title=f"{title}\n{authors}", group=group_id, color=color)
         # Add edges based on cosine similarity of summaries
         for i in range(len(papers)):
