@@ -645,7 +645,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
         # Draw the MST with colors
         pos = nx.spring_layout(mst)
         colors = [mst.nodes[data]['color'] for data in mst]
-        nx.draw(mst, pos, with_labels=True, node_color=colors, edge_color='gray', node_size=500, font_size=10)
+        nx.draw(mst, pos, with_labels=True, node_color=colors, edge_color='gray',font_size=10)
 
     path = "arxiv_network.html"
     net.save_graph(path)
