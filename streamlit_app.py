@@ -634,7 +634,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         authors = [paper[4] for paper in papers]
         author_overlap = calculate_author_overlap(authors)
-        cosine_sim = compute_cosine_similarity(papers)
+        cosine_sim = calculate_cosine_similarity(papers)
 
         distance_matrix = 1 - (0.5*cosine_sim + 0.5*author_overlap)
         # Build a graph to calculate MST
