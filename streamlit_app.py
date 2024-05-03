@@ -670,7 +670,7 @@ def display_groups_with_expanders(group_details):
             st.session_state[button_key] = expander.expanded
 
 # Display the interactive legend
-display_groups_with_expanders(group_details)
+# display_groups_with_expanders(group_details)
 
 st.title('arXiv Paper Explorer')
 
