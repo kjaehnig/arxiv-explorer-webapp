@@ -629,7 +629,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         for i, (title, summary, primary_category, categories, authors) in enumerate(papers):
             group_id = int(np.argmax(author_overlap[i]))  # Assuming highest overlap defines the group
-            group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
+            group_label = f"{arxiv_categories.get(primary_category, 'Other')}"
             color = category_color[primary_category]
             # st.write(color)
             net.add_node(i, label=group_label, title=f"{title}\n{authors}", color=color)
@@ -652,7 +652,7 @@ def build_interactive_network(papers, similarity_matrix, threshold=0.25):
 
         # Add nodes with color
         for idx, (title, _, primary_category, _, authors) in enumerate(papers):
-            group_label = f"{primary_category.split('-')[0]}-{arxiv_categories.get(primary_category, 'Other')}"
+            group_label = f"{arxiv_categories.get(primary_category, 'Other')}"
             G.add_node(idx,
                        label=group_label,
                        color=category_color[primary_category],
