@@ -745,7 +745,7 @@ st.title('arXiv Paper Explorer')
 # User input for subtopic
 subtopic = st.text_input('Enter a subtopic to search:', 'machine learning')
 
-def print_out_papers_and_summaries():
+def print_out_papers_and_summaries(papers):
     # Display paper titles and summaries
     for title, summary, primary_cat, cat, authors in papers:
         with st.expander(title + f" (Found in {arxiv_categories.get(primary_category, 'Other')}"):
@@ -754,11 +754,15 @@ def print_out_papers_and_summaries():
             st.write(summary)
 
 
-paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
-                                                value=False,
-                                                on_change=print_out_papers_and_summaries)
+
 if st.button('Fetch Papers'):
     papers = fetch_papers(subtopic, max_results)
+
+    paper_detail_printer = st.sidebar.checkbox('Print titles and abstracts?',
+                                               value=False,
+                                               on_change=print_out_papers_and_summaries,
+                                               args=(papers,))
+
     if papers:
         st.write(f"Found {len(papers)} papers on '{subtopic}'.")
 
