@@ -742,11 +742,11 @@ if fetch_papers_buttons:
     if papers:
         st.write(f"Found {len(papers)} papers on '{subtopic}'.")
 
-    if also_summarize:
-        with st.spinner("Summarizing each abstract..."):
-            summary_dict = {}
-            for _, summary, _, _, _, aid in papers:
-                summary_dict[aid] = summarize_abstract(summary)
+        if also_summarize:
+            with st.spinner("Summarizing each abstract..."):
+                summary_dict = {}
+                for _, summary, _, _, _, aid in papers:
+                    summary_dict[aid] = summarize_abstract(summary)
 
 
     with st.container():
