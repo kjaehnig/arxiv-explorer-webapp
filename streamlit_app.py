@@ -735,17 +735,19 @@ allcols = st.columns(5)
 fetch_papers_buttons = allcols[0].button('Fetch papers')
 also_summarize = allcols[1].checkbox('Summarize with LLM')
 if also_summarize:
-    st.warning("Summarizing each paper takes a while.")
+    st.warning("Summarizing each abstract takes a while.")
 
 if fetch_papers_buttons:
     papers = fetch_papers(subtopic, max_results)
-
-    if also_summarize:
-        summary_dict = {}
-        for _, summary, _, _, _, aid in papers:
-            summary_dict[aid] = summarize_abstract(summary)
     if papers:
         st.write(f"Found {len(papers)} papers on '{subtopic}'.")
+
+    if also_summarize:
+        with st.spinner("Summarizing each abstract..."):
+            summary_dict = {}
+            for _, summary, _, _, _, aid in papers:
+                summary_dict[aid] = summarize_abstract(summary)
+
 
         with st.container():
             # Calculate similarities and build the network graph
