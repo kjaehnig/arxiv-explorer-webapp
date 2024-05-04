@@ -749,31 +749,31 @@ if fetch_papers_buttons:
                 summary_dict[aid] = summarize_abstract(summary)
 
 
-        with st.container():
-            # Calculate similarities and build the network graph
-            # similarity_matrix = calculate_cosine_similarity(papers)
-            network_path, group_details = build_interactive_network(papers, threshold=thresh_value)
-            HtmlFile = open(network_path, 'r', encoding='utf-8')
-            st.components.v1.html(HtmlFile.read(), height=700)
+    with st.container():
+        # Calculate similarities and build the network graph
+        # similarity_matrix = calculate_cosine_similarity(papers)
+        network_path, group_details = build_interactive_network(papers, threshold=thresh_value)
+        HtmlFile = open(network_path, 'r', encoding='utf-8')
+        st.components.v1.html(HtmlFile.read(), height=700)
 
-        with st.container():
-            st.write("Paper Titles, Summaries, and Authors")
-            for title, summary, primary_cat, cat, authors, aid in papers:
-                with st.expander(title + f" (Found in {arxiv_categories.get(primary_cat, 'Other')})"):
-                    # summary_response = summarize_abstract(summary)
-                    st.write(f"arXiv ID: {aid}")
-                    st.write((ii for ii in authors))
-                    st.write(summary)
-                    if also_summarize:
-                        st.write("Non-technical Summary")
-                        st.write(summary_dict[aid])
-                    # if st.checkbox("Non-technical Abstract Please.", key=summary_key, value=False):
-                    #     if summary_key not in st.session_state:
-                    #         st.session_state[summary_key] = summarize_abstract(summary)
-                    #     # simplified_summary = summarize_abstract(summary)
-                    #     st.write(st.session_state[summary_key])
-        # if show_legend:
-        #     display_groups_with_expanders(group_details)
+    with st.container():
+        st.write("Paper Titles, Summaries, and Authors")
+        for title, summary, primary_cat, cat, authors, aid in papers:
+            with st.expander(title + f" (Found in {arxiv_categories.get(primary_cat, 'Other')})"):
+                # summary_response = summarize_abstract(summary)
+                st.write(f"arXiv ID: {aid}")
+                st.write((ii for ii in authors))
+                st.write(summary)
+                if also_summarize:
+                    st.write("Non-technical Summary")
+                    st.write(summary_dict[aid])
+                # if st.checkbox("Non-technical Abstract Please.", key=summary_key, value=False):
+                #     if summary_key not in st.session_state:
+                #         st.session_state[summary_key] = summarize_abstract(summary)
+                #     # simplified_summary = summarize_abstract(summary)
+                #     st.write(st.session_state[summary_key])
+    # if show_legend:
+    #     display_groups_with_expanders(group_details)
 
     else:
         st.write("No papers found.")
