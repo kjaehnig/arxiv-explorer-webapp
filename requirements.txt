@@ -94,7 +94,7 @@ nvidia-nvjitlink-cu12==12.4.127
 nvidia-nvtx-cu12==12.1.105
 oauthlib==3.2.2
 openai==1.25.0
-opencv-python==4.9.0.80
+opencv-python-headless==4.9.0.80
 opt-einsum==3.3.0
 optree==0.11.0
 packaging==23.2
